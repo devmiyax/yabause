@@ -7,5 +7,5 @@ parent-id: settings
 ---
   If you choose a on-screen game pad, you can select this list item. and you can adjust the size of on screen pad for your hands and screen size.  
   
-  ![](../img/onscreenpad.jpg)
+  ![](img/onscreenpad.jpg)
   
