@@ -15,7 +15,7 @@ parent-id: howtouse
 4. Run uoYabause on your Android device.
 
 5. if it's the first time, setting for your device is recomannded. Recomanded setting is below. See Settings section for details.
- * Cartrice:'32Mbit Backup RAM' it's enough to save tons of game status.
+ * Cartridge:'32Mbit Backup RAM' it's enough to save tons of game status.
  * Rendering engine: 'OpenGL ES Video Interface' Fast and full-hd rendering.
  * Frame skip: 'Off' for acurate rendring, but be slow excepting high perfomance devices like SHEILD TV etc. 
  * Input device: 'Game pad' on screen pad is not enough for action games. 
