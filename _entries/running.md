@@ -20,8 +20,11 @@ parent-id: howtouse
  * Frame skip: 'Off' for acurate rendring, but be slow excepting high perfomance devices like SHEILD TV etc. 
  * Input device: 'Game pad' on screen pad is not enough for action games. 
  * Sound: 'On' 
-
   
 6. push 'Load Games' button and select the file name you located at 3.
 
 7. Have a fun!!!!  
+
+ |A|B|C|
+ |D|E|F|
+

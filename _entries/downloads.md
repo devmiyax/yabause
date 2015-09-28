@@ -2,7 +2,8 @@
 sectionid: downloads
 sectionclass: h1
 title: Downloads
-number: 3000
+number: 4000
+is-parent: yes
 ---
 
 * old versions
