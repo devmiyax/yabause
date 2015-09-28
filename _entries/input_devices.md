@@ -1,7 +1,7 @@
-﻿---
+---
 sectionid: input_devices
 sectionclass: h2
 title: Input Devices
 parent-id: compatibility
-number: 3200
+number: 4200
 ---

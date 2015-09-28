@@ -70,10 +70,10 @@ h1, h2, h3, h4, h5, h6{
 }
 
 h1 {
-    font-size: 3.1em;
-    padding: 30px 0 0;
+    font-size: 2.5em;
+    padding: 30px 0 5px;
     text-align: right;
-    border-bottom: $green 9px solid;
+    border-bottom: $green 2px solid;
     width: 100%;
     line-height: 0.61;
     margin: 0 0 20px;
@@ -91,10 +91,10 @@ h1 {
 
 h2 {
     font-size: 2em;
-    padding: 30px 0 0;
+    padding: 30px 0 5px;
     width: 90%;
-    text-align: center;
-    border-bottom: 5px solid $green;
+    text-align: left;
+    border-bottom: 2px solid $green;
     margin: 0 auto 20px;
     line-height: 0.63;
 
@@ -112,10 +112,10 @@ h2 {
 
 h3{
     font-size: 1.7em;
-    padding: 20px 0 0;
+    padding: 20px 0 5px;
     width: 90%;
     text-align: left;
-    border-bottom: 4px solid $green;
+    border-bottom: 1px solid $green;
     margin: 0 auto 20px;
     line-height: 0.65;
 
@@ -132,10 +132,10 @@ h3{
 
 h4{
     font-size: 1.5em;
-    padding: 18px 0 0;
+    padding: 18px 0 5px;
     width: 90%;
     text-align: left;
-    border-bottom: 3px solid $green;
+    border-bottom: 1px solid $green;
     margin: 0 auto 18px;
     line-height: 0.67;
 
@@ -153,10 +153,10 @@ h4{
 
 h5{
     font-size: 1.3em;
-    padding: 40px 0 0;
+    padding: 40px 0 5px;
     width: 90%;
     text-align: left;
-    border-bottom: 2px solid $green;
+    border-bottom: 1px solid $green;
     margin: 0 auto 15px;
     line-height: 0.68;
 

@@ -1,9 +1,8 @@
-﻿---
-sectionid: compatibility
+---
+sectionid: compatiblity
 sectionclass: h1
-title: Compatibility
-number: 3000
+title: Compatiblity
+number: 4000
 is-parent: yes
 ---
 
-this is the list
