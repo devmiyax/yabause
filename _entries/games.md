@@ -35,7 +35,7 @@ this is just a part of game compatibility list. I want to move it to database or
   - GS-9170 Sonic R
   - T-1247G Street Fighter Zero 3
 
-* Confrimed to **NOT** boot.
+* Confrimed **NOT** to boot.
   - GS-9101 Fighting Vipers
   - T-4507G Grandia  
   - Dalias gaiden
