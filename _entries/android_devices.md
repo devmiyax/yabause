@@ -6,11 +6,11 @@ parent-id: compatibility
 number: 4100
 ---
 
-Basically uoYabause works on a Android devices above Android 4.4 which has OpenGL ES 3.0 support. But Android fragmentation makes it hard. This is the list of android devices compatibilitty
+Basically uoYabause works on a Android devices above Android 4.4 which has OpenGL ES 3.0 support. But Android fragmentation makes it hard. This is the list of android devices compatibility.
 
 * Confirmed to work
-  - NVIDIA Sheild TV( most recommanded! )
-  - NVIDIA Sheild Tablet 
+  - NVIDIA Shield TV( most recommended! )
+  - NVIDIA Shield Tablet 
   - Nexus 6（shamu）
   - Nexus 7(2013)
   - Optimus Exceed 2（w5c)
@@ -51,7 +51,7 @@ Basically uoYabause works on a Android devices above Android 4.4 which has OpenG
 
 * Confirmed **not** to work
   - Nexus Player
-  - Galaxy sereices which have Mali GPU
+  - Galaxy devices which have Mali GPU
   - Galaxy Mega 6.3（meliuslteatt）
   - Zenfone2（Z00A_1)
   - HTC One max（t6ul）
