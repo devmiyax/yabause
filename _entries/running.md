@@ -17,7 +17,7 @@ parent-id: howtouse
 5. If it's the first time, checking the settings for your device is recommended. Recommended settings are below. See Settings section for details.
  * Cartridge:'32Mbit Backup RAM' it's enough to save tons of game status.
  * Rendering engine: 'OpenGL ES Video Interface' Fast and full-hd rendering.
- * Frame skip: 'Off' for accurate rendering, but will be slow except for high perfomance devices like SHEILD TV etc. 
+ * Frame skip: 'Off' for accurate rendering, but will be slow except for high performance devices like SHEILD TV etc. 
  * Input device: 'Game pad' on screen pad is not enough for action games. 
  * Sound: 'On' 
   
