@@ -12,9 +12,10 @@
     <string name="audio_output">Вывод звука</string>
     <string name="fps">Счётчик FPS</string>
     <string name="frameskip">Пропуск кадров</string>
-    <string name="keepaspectrate">Оригинальные пропорции</string>
+    <string name="keepaspectrate">Сохранять пропорции</string>
     <string name="choose_input_device">Выбор устройства ввода</string>
-    <string name="input_device_title">Устройсто ввода</string>
+    <string name="input_device_title">Устройство ввода Игрока 1</string>
+    <string name="input_device_title_player2">Устройство ввода Игрока 2</string>
     <string name="input_device">Выбрать</string>
     <string name="input_device_setting">Настроить кнопки геймпада</string>
     <string name="onscrenn_pad_setting">Настроить экранный геймпад</string>    
@@ -30,7 +31,7 @@
     <string name="donate_message">
         Поддержите разработку!\n\n
 		Вы можете помочь развитию uoYabause, сделав пожертвование на официальном сайте http://yabause.org. 
-		Вы также можете поддержать uoYabause, перечислив указанную сумму нажатием кнопки внизу. Это ускорит работу по улучшению точности эмуляции и поддержке новых устройств ввода.﻿
+		Вы также можете поддержать uoYabause, перечислив любую из указанных сумм. Это ускорит работу по повышению точности эмуляции, поддержке новых устройств и геймпадов.
     </string>
     <string name="thank_you">Благодарим за Вашу поддержку!</string>
     <string name="error_consume">Ошибка перечисления</string>
