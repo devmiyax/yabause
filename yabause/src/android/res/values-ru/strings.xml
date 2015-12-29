@@ -8,6 +8,7 @@
     <string name="setting">Настройки</string>
     <string name="choose_bios">Выбор BIOS</string>
     <string name="choose_cartridge">Выбор расширения</string>
+    <string name="choose_cpu_core">Выбор ядра CPU</string>
     <string name="choose_video_core">Выбор рендерера</string>
     <string name="audio_output">Вывод звука</string>
     <string name="fps">Счётчик FPS</string>
@@ -18,20 +19,22 @@
     <string name="input_device_title_player2">Устройство ввода Игрока 2</string>
     <string name="input_device">Выбрать</string>
     <string name="input_device_setting">Настроить кнопки геймпада</string>
-    <string name="onscrenn_pad_setting">Настроить экранный геймпад</string>    
+    <string name="onscrenn_pad_setting">Настроить экранный геймпад</string>
+    <string name="nopad">Нет</string>
     <string name="bios">BIOS</string>
     <string name="cartridge">Расширение</string>
+    <string name="cpu_core">Cpu Core</string>
     <string name="video_core">Видео рендерер</string>
     <string name="setting_sound">Звук</string>
     <string name="setting_graphics">Графика</string>
     <string name="setting_general">Общие</string>
-    <string name="msg_opengl_not_supported">Устройство не поддерживает OpenGL ES 3.0 или выше.\nВы не можете выбрать OpenGL рендерер.\n</string>
+    <string name="msg_opengl_not_supported">Устройство не поддерживает OpenGL ES 3.0 или выше. Вы не можете выбрать OpenGL рендерер.\n</string>
     <string name="skip">Пропуск</string>
     <string name="donation">Поддержать проект</string>
     <string name="donate_message">
         Поддержите разработку!\n\n
 		Вы можете помочь развитию uoYabause, сделав пожертвование на официальном сайте http://yabause.org. 
-		Вы также можете поддержать uoYabause, перечислив любую из указанных сумм. Это ускорит работу по повышению точности эмуляции, поддержке новых устройств и геймпадов.
+		Вы также можете поддержать uoYabause, перечислив любую из указанных сумм. Это ускорит работы по повышению точности эмуляции, поддержке новых устройств и геймпадов.
     </string>
     <string name="thank_you">Благодарим за Вашу поддержку!</string>
     <string name="error_consume">Ошибка перечисления</string>
@@ -66,11 +69,21 @@
 	<string name="exit">Выход</string>
 	<string name="ignore">Пропустить</string>
 	
+	<string name="dynrec_cpu_interface">Рекомпилятор (быстро, менее точно)</string>
+    	<string name="software_cpu_interface">Интерпретатор (медленно, более точно)</string>
+    
 	<string name="opengl_video_interface">OpenGL</string>
 	<string name="software_video_interface">Программный</string>
 	<string name="onscreen_pad">Экранный геймпад</string>
 	<string name="select_from_other_directory">Загрузить из другой папки</string>
 	
 	<string name="menu_save_screenshot">Скриншот</string>
+	<string name="menu_report">Отчёт</string>
+
+	<string name="video_filter">Фильтр</string>
+    	<string name="choose_video_filter">Выбор фильтра изображения</string>
+
+	<string name="video_filter_none">Нет</string>
+    	<string name="video_filter_fxaa">FXAA (только для устройств NVIDIA)</string>
 		
 </resources>
