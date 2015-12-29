@@ -23,7 +23,7 @@
     <string name="nopad">Нет</string>
     <string name="bios">BIOS</string>
     <string name="cartridge">Расширение</string>
-    <string name="cpu_core">Cpu Core</string>
+    <string name="cpu_core">Ядро CPU</string>
     <string name="video_core">Видео рендерер</string>
     <string name="setting_sound">Звук</string>
     <string name="setting_graphics">Графика</string>
