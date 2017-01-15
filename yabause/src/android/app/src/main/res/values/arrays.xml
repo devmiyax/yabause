@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="entries_cpu_list_preference">
+        <item>@string/dynrec_cpu_interface</item>
+        <item>@string/software_cpu_interface</item>
+    </string-array>
+    <string-array name="entryvalues_cpu_list_preference" translatable="false" >
+        <item>2</item>
+        <item>0</item>
+    </string-array>
+    <string-array name="entries_video_filte_list_preference" >
+        <item>@string/video_filter_none</item>
+        <item>@string/video_filter_fxaa</item>
+        <item>@string/video_filter_scanline</item>
+        <item>@string/video_filter_bilinear</item>
+    </string-array>
+    <string-array name="entryvalues_video_filte_list_preference" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    <string-array name="entries_polygon_generation_type" translatable="false" >
+        <item>Triangle using perspective correction</item>
+        <item>CPU Tessellation</item>
+        <item>GPU Tessellation</item>
+    </string-array>
+    <string-array name="entryvalues_polygon_generation_type" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="entries_sound_engine_list_preference" translatable="false" >
+        <item>Current(High quality version for high-end devices)</item>
+        <item>Legacy(for low-end devices)</item>
+    </string-array>
+    <string-array name="entryvalues_sound_engine_list_preference" translatable="false">
+        <item>1</item>
+        <item>0</item>
+    </string-array>
+
+    <string-array name="entries_video_resolution_list_preference" translatable="false" >
+        <item>Native(native resolution of this android device)</item>
+        <item>4x</item>
+        <item>2x</item>
+        <item>Original</item>
+    </string-array>
+    <string-array name="entryvalues_video_resolution_list_preference" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+</resources>

@@ -24,6 +24,7 @@
 
 #include "core.h"
 
+
 typedef struct
 {
    int percoretype;
@@ -36,16 +37,25 @@ typedef struct
    u8 regionid;
    const char *biospath;
    const char *cdpath;
+   const char *ssfpath;
    const char *buppath;
    const char *mpegpath;
    const char *cartpath;
-   const char *netlinksetting;
+   const char *modemip;
+	const char *modemport;
    int videoformattype;
    int frameskip;
    int clocksync;  // 1 = sync internal clock to emulation, 0 = realtime clock
    u32 basetime;   // Initial time in clocksync mode (0 = start w/ system time)
    int usethreads;
+   int numthreads;
    int osdcoretype;
+   int skip_load;//skip loading in YabauseInit so tests can be run without a bios
+   int video_filter_type;
+   int polygon_generation_mode;
+   int play_ssf;
+   int use_new_scsp;
+   int resolution_mode;
 } yabauseinit_struct;
 
 #define CLKTYPE_26MHZ           0
@@ -60,6 +70,7 @@ void print_usage(const char *program_name);
 
 void YabauseChangeTiming(int freqtype);
 int YabauseInit(yabauseinit_struct *init);
+void YabFlushBackups(void);
 void YabauseDeInit(void);
 void YabauseSetDecilineMode(int on);
 void YabauseResetNoLoad(void);
@@ -90,15 +101,24 @@ typedef struct
    int CurSH2FreqType;
    int IsPal;
    u8 UseThreads;
+   int NumThreads;
    u8 IsSSH2Running;
    u64 OneFrameTime;
    u64 tickfreq;
    int emulatebios;
    int usequickload;
+   int wait_line_count;
+   int playing_ssf;
 } yabsys_struct;
 
 extern yabsys_struct yabsys;
 
 int YabauseEmulate(void);
+
+extern u32 saved_scsp_cycles;
+extern u32 saved_m68k_cycles;
+#define SCSP_FRACTIONAL_BITS 20
+u32 get_cycles_per_line_division(u32 clock, int frames, int lines, int divisions_per_line);
+
 
 #endif

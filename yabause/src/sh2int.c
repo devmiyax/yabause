@@ -33,10 +33,10 @@
 #include "bios.h"
 #include "yabause.h"
 
-// #define SH2_TRACE  // Uncomment to enable tracing
+
 
 #ifdef SH2_TRACE
-# include "sh2trace.h"
+#include "sh2trace.h"
 # define MappedMemoryWriteByte(a,v)  do { \
     uint32_t __a = (a), __v = (v);        \
     sh2_trace_writeb(__a, __v);           \
@@ -52,7 +52,18 @@
     sh2_trace_writel(__a, __v);           \
     MappedMemoryWriteLong(__a, __v);      \
 } while (0)
+
+void SetInsTracingToggle(int toggle)
+{
+	SH2SetInsTracing(toggle ? 1 : 0);
+}
+#else
+void SetInsTracingToggle(int toggle)
+{
+
+}
 #endif
+
 
 
 opcodefunc opcodes[0x10000];
@@ -135,29 +146,54 @@ fetchfunc fetchlist[0x100];
 
 static u32 FASTCALL FetchBios(u32 addr)
 {
+#if CACHE_ENABLE
+   return cache_memory_read_w(&CurrentSH2->onchip.cache, addr);
+#else
    return T2ReadWord(BiosRom, addr & 0x7FFFF);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 static u32 FASTCALL FetchCs0(u32 addr)
 {
+#if CACHE_ENABLE
+   return cache_memory_read_w(&CurrentSH2->onchip.cache, addr);
+#else
    return CartridgeArea->Cs0ReadWord(addr);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 static u32 FASTCALL FetchLWram(u32 addr)
 {
-   return T2ReadWord(LowWram, addr & 0xFFFFF);
+#if CACHE_ENABLE
+	return cache_memory_read_w(&CurrentSH2->onchip.cache, addr);
+#else
+	return T2ReadWord(LowWram, addr & 0xFFFFF);
+#endif
+
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 static u32 FASTCALL FetchHWram(u32 addr)
 {
-   return T2ReadWord(HighWram, addr & 0xFFFFF);
+#if CACHE_ENABLE
+	return cache_memory_read_w(&CurrentSH2->onchip.cache, addr);
+#else
+	return T2ReadWord(HighWram, addr & 0xFFFFF);
+#endif
 }
+
+extern u8 * Vdp1Ram;
+static u32 FASTCALL FetchVram(u32 addr)
+{
+  addr &= 0x07FFFF;
+  return T1ReadWord(Vdp1Ram, addr);
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -180,6 +216,12 @@ static void FASTCALL SH2delay(SH2_struct * sh, u32 addr)
    else
 #endif
    sh->instruction = fetchlist[(addr >> 20) & 0x0FF](addr);
+
+#ifdef DMPHISTORY
+   sh->pchistory_index++;
+   sh->pchistory[sh->pchistory_index & 0xFF] = addr;
+   sh->regshistory[sh->pchistory_index & 0xFF] = sh->regs;
+#endif
 
    // Execute it
    opcodes[sh->instruction](sh);
@@ -2676,6 +2718,9 @@ int SH2InterpreterInit()
          case 0x020: // CS0
             fetchlist[i] = FetchCs0;
             break;
+         case 0x05c: // Fighting Viper
+            fetchlist[i] = FetchVram;
+            break;
          case 0x060: // High Work Ram
          case 0x061: 
          case 0x062: 
@@ -2786,7 +2831,7 @@ FASTCALL void SH2DebugInterpreterExec(SH2_struct *context, u32 cycles)
    /* Avoid accumulating leftover cycles multiple times, since the trace
     * code automatically adds state->cycles to the cycle accumulator when
     * printing a trace line */
-   sh2_trace_add_cycles(-(context->cycles));
+   sh2_trace_add_cycles(-((s32)context->cycles));
 #endif
 
    SH2HandleInterrupts(context);
@@ -2853,16 +2898,14 @@ FASTCALL void SH2DebugInterpreterExec(SH2_struct *context, u32 cycles)
       SH2HandleStepOverOut(context);
       SH2HandleTrackInfLoop(context);
 
+#ifdef DMPHISTORY
+	  context->pchistory_index++;
+	  context->pchistory[context->pchistory_index & 0xFF] = context->regs.PC;
+	  context->regshistory[context->pchistory_index & 0xFF] = context->regs;
+#endif
+
       // Execute it
       opcodes[context->instruction](context);
-
-		//if (MappedMemoryReadLong(0x06000930) == 0x00000009)
-		if (context->regs.PC == 0x060273AA)
-		{
-			int test=0;
-			test = 1;
-		}
-
 #ifdef SH2_UBC
 	  if (ubcinterrupt)
 	     SH2UBCInterrupt(context, ubcflag);
@@ -2880,14 +2923,20 @@ FASTCALL void SH2InterpreterExec(SH2_struct *context, u32 cycles)
 {
    SH2HandleInterrupts(context);
 
+#ifndef EXEC_FROM_CACHE
    if (context->isIdle)
       SH2idleParse(context, cycles);
    else
       SH2idleCheck(context, cycles);
+#endif
 
    while(context->cycles < cycles)
    {
       // Fetch Instruction
+#ifdef EXEC_FROM_CACHE
+      if ((context->regs.PC & 0xC0000000) == 0xC0000000) context->instruction = DataArrayReadWord(context->regs.PC);
+      else
+#endif
       context->instruction = fetchlist[(context->regs.PC >> 20) & 0x0FF](context->regs.PC);
 
       // Execute it

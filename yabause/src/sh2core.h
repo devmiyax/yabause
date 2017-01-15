@@ -23,6 +23,7 @@
 
 #include "core.h"
 #include "memory.h"
+#include "sh2cache.h"
 
 #define SH2CORE_DEFAULT     -1
 #define MAX_INTERRUPTS 50
@@ -30,6 +31,9 @@
 #ifdef MACH
 #undef MACH
 #endif
+
+//#define DMPHISTORY
+
 
 // UBC Flags
 #define BBR_CPA_NONE			(0 << 6)
@@ -278,6 +282,7 @@ typedef struct
    u16 RTCSR;  // 0xFFFFFFF0
    u16 RTCNT;  // 0xFFFFFFF4
    u16 RTCOR;  // 0xFFFFFFF8
+   cache_enty cache;
 } Onchip_struct;
 
 typedef struct
@@ -395,6 +400,12 @@ typedef struct
       int maxNum;
    } trackInfLoop;
 
+#ifdef DMPHISTORY
+   u32 pchistory[0x100];
+   sh2regs_struct regshistory[0x100];
+   u32 pchistory_index;
+#endif
+
 } SH2_struct;
 
 typedef struct
@@ -467,6 +478,8 @@ int SH2AddCodeBreakpoint(SH2_struct *context, u32 addr);
 int SH2DelCodeBreakpoint(SH2_struct *context, u32 addr);
 codebreakpoint_struct *SH2GetBreakpointList(SH2_struct *context);
 void SH2ClearCodeBreakpoints(SH2_struct *context);
+void SH2Disasm(u32 v_addr, u16 op, int mode, sh2regs_struct *r, char *string);
+void SH2DumpHistory(SH2_struct *context);
 
 static INLINE void SH2HandleBreakpoints(SH2_struct *context)
 {
@@ -476,6 +489,7 @@ static INLINE void SH2HandleBreakpoints(SH2_struct *context)
 
       if ((context->regs.PC == context->bp.codebreakpoint[i].addr) && context->bp.inbreakpoint == 0) {
          context->bp.inbreakpoint = 1;
+		 SH2DumpHistory(context);
          if (context->bp.BreakpointCallBack)
              context->bp.BreakpointCallBack(context, context->bp.codebreakpoint[i].addr, context->bp.BreakpointUserData);
          context->bp.inbreakpoint = 0;

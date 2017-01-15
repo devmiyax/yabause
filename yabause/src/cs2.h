@@ -256,12 +256,13 @@ typedef struct {
    u32 ssh2stack;
    u32 firstprogaddr;
    u32 firstprogsize;
+   u64 gameid;
 } ip_struct;
 
 extern Cs2 * Cs2Area;
 extern ip_struct * cdip;
 
-int Cs2Init(int, int, const char *, const char *, const char *);
+int Cs2Init(int carttype, int coreid, const char *cdpath, const char *mpegpath, const char *modemip, const char *modemport);
 int Cs2ChangeCDCore(int coreid, const char *cdpath);
 void Cs2DeInit(void);
 
@@ -363,7 +364,7 @@ u8 Cs2FADToTrack(u32 val);
 u32 Cs2TrackToFAD(u16 trackandindex);
 void Cs2FADToMSF(u32 val, u8 *m, u8 *s, u8 *f);
 void Cs2SetupDefaultPlayStats(u8 track_number, int writeFAD);
-block_struct * Cs2AllocateBlock(u8 * blocknum);
+block_struct * Cs2AllocateBlock(u8 * blocknum, s32 sectsize);
 void Cs2FreeBlock(block_struct * blk);
 void Cs2SortBlocks(partition_struct * part);
 partition_struct * Cs2GetPartition(filter_struct * curfilter);
@@ -378,5 +379,13 @@ u8 Cs2GetIP(int autoregion);
 u8 Cs2GetRegionID(void);
 int Cs2SaveState(FILE *);
 int Cs2LoadState(FILE *, int, int);
+u32 Cs2GetMasterStackAdress(void);
+u32 Cs2GetSlaveStackAdress(void);
+u64 Cs2GetGameId();
+char * Cs2GetCurrentGmaecode();
+
+// external CD drive command
+void Cs2ForceOpenTray();
+int Cs2ForceCloseTray( int coreid, const char * cdpath );
 
 #endif
