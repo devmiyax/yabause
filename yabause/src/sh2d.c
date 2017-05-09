@@ -34,14 +34,14 @@
 typedef struct
 {
    int format;
-   const char *mnem;
+   const char mnem[60];
    unsigned short mask;   /* mask used to obtain opcode bits */
    unsigned short  bits;   /* opcode bits */
    int dat;    /* specific data for situation */
    int sh2;    /* SH-2 specific */
 } i_descr;
 
-i_descr trace[] = {
+static const i_descr trace[] = {
    { ZERO_F,       "clrt",                 0xffff, 0x8,    0,      0 },
    { ZERO_F,       "clrmac",               0xffff, 0x28,   0,      0 },
    { ZERO_F,       "div0u",                0xffff, 0x19,   0,      0 },
@@ -187,7 +187,7 @@ i_descr trace[] = {
    { 0,            NULL,                   0,      0,      0,      0 }
 };
 
-i_descr tab[] = {
+static const i_descr tab[] = {
    { ZERO_F,       "clrt",                 0xffff, 0x8,    0,      0 },
    { ZERO_F,       "clrmac",               0xffff, 0x28,   0,      0 },
    { ZERO_F,       "div0u",                0xffff, 0x19,   0,      0 },

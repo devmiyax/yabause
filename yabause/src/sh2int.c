@@ -2958,8 +2958,11 @@ FASTCALL void SH2DebugInterpreterExec(SH2_struct *context, u32 cycles)
    sh2_trace_add_cycles(context->cycles);
 #endif
 }
-
 //////////////////////////////////////////////////////////////////////////////
+
+char trace[0x1000];
+int length=0;
+char lineBuf[256];
 
 FASTCALL void SH2InterpreterExec(SH2_struct *context, u32 cycles)
 {
@@ -2982,7 +2985,19 @@ FASTCALL void SH2InterpreterExec(SH2_struct *context, u32 cycles)
       else
 #endif
       context->instruction = fetchlist[(context->regs.PC >> 20) & 0x0FF](context->regs.PC);
-
+#ifdef TRACE_ASM
+	if  ((context == MSH2)) {
+		SH2Disasm(context->regs.PC, MappedMemoryReadWord(context->regs.PC), 0, &context->regs, &lineBuf[0]);
+		length += snprintf(&trace[length],256,"%s\n",&lineBuf[0]);
+		if (length >= (0x1000-256)) {
+			int fd = open("log.txt", O_RDWR|O_CREAT|O_APPEND, S_IRWXU|S_IRWXG|S_IRWXO);
+			write(fd, &trace[0], length*sizeof(char));
+			memset(&lineBuf[0], 0, 256);
+			close(fd);
+			length = 0;
+		}
+	}
+#endif
       // Execute it
       opcodes[context->instruction](context);
    }
