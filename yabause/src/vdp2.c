@@ -488,6 +488,11 @@ void Vdp2HBlankIN(void) {
 
    if (yabsys.IsSSH2Running)
       SH2SendInterrupt(SSH2, 0x41, 0x2);
+#if !defined(YAB_ASYNC_RENDERING)
+   if (yabsys.LineCount == yabsys.MaxLineCount-1){
+	vdp2VBlankOUT();
+   }
+#endif
 }
 
 void Vdp2HBlankOUT(void) {
@@ -601,11 +606,8 @@ void Vdp2HBlankOUT(void) {
     //} while (YaGetQueueSize(vdp1_rcv_evqueue) != 0);
       FRAMELOG("**WAIT END**");
     FrameProfileAdd("DirectDraw sync");
-  }
-#else
-    vdp2VBlankOUT();
-  }
 #endif
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
