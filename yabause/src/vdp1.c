@@ -346,29 +346,6 @@ void FASTCALL Vdp1WriteWord(u32 addr, u16 val) {
       FRAMELOG("Write PTMR %X line = %d", val, yabsys.LineCount);
       Vdp1Regs->COPR = 0;
       Vdp1Regs->PTMR = val;
-#if YAB_ASYNC_RENDERING
-      if (val == 1){ 
-        FRAMELOG("VDP1: VDPEV_DIRECT_DRAW %d/%d", YaGetQueueSize(vdp1_rcv_evqueue), yabsys.LineCount);
-        if ( YaGetQueueSize(vdp1_rcv_evqueue) > 0){
-          yabsys.wait_line_count = -1;
-          do{
-            YabWaitEventQueue(vdp1_rcv_evqueue);
-          } while (YaGetQueueSize(vdp1_rcv_evqueue) != 0);
-        }
-        Vdp1Regs->EDSR >>= 1;
-        yabsys.wait_line_count = yabsys.LineCount + 50;
-        yabsys.wait_line_count %= yabsys.MaxLineCount;
-        FRAMELOG("SET DIRECT WAIT %d", yabsys.wait_line_count);
-        YabAddEventQueue(evqueue,VDPEV_DIRECT_DRAW); 
-      }
-#else
-    if (val == 1){
-      FRAMELOG("VDP1: VDPEV_DIRECT_DRAW\n");
-        Vdp1Regs->EDSR >>= 1;
-        Vdp1Draw(); 
-        VIDCore->Vdp1DrawEnd();
-    }
-#endif
          break;
       case 0x6:
          Vdp1Regs->EWDR = val;

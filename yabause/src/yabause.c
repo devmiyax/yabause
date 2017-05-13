@@ -135,9 +135,9 @@ void print_usage(const char *program_name) {
 #define VBLANK_CYCLES_RATIO (0.5)
 #define HBLANK_CYCLES_RATIO (0.1)
 
-#define DECILINE_STEP_LINE (10.0)
+#define DECILINE_STEP (12.0)
 
-#define DECILINE_STEP (DECILINE_STEP_LINE + VBLANK_CYCLES_RATIO + HBLANK_CYCLES_RATIO)
+#define DECILINE_RATIO ((DECILINE_STEP - VBLANK_CYCLES_RATIO - VBLANK_CYCLES_RATIO)/(DECILINE_STEP))
 
 void YabauseChangeTiming(int freqtype) {
    // Setup all the variables related to timing
@@ -692,8 +692,9 @@ void emulate(int cycles) {
 }
 
 int YabauseEmulate(void) {
-   const u32 cyclesinc =
-      yabsys.DecilineMode ? yabsys.DecilineStop : yabsys.DecilineStop * DECILINE_STEP;
+   const u32 cyclesstep =
+      yabsys.DecilineMode ? yabsys.DecilineStop : yabsys.DecilineStop / DECILINE_STEP;
+   u32 cyclesinc = cyclesstep;
 
    int oneframeexec = 0;
 
@@ -731,13 +732,14 @@ int totalSSH2CyclesRequested = 0;
             // VBlankIN
             SmpcINTBACKEnd();
             Vdp2VBlankIN();
-            oneframeexec = 1;
             PROFILE_STOP("vblankin");
             CheatDoPatches();
-            state = VBLANK;
+            state = LINE;
          break;
          case VBLANK:
             emulate(cyclesinc * VBLANK_CYCLES_RATIO);
+	    Vdp2VBlank();
+            cyclesinc -= cyclesinc * VBLANK_CYCLES_RATIO;
             state = VBLANKOUT;
          break;
          case VBLANKOUT:
@@ -755,13 +757,15 @@ int totalSSH2CyclesRequested = 0;
          case HBLANK:
             emulate(cyclesinc * HBLANK_CYCLES_RATIO);
             yabsys.DecilineCount = 0;
-            yabsys.LineCount = (yabsys.LineCount+1)%yabsys.MaxLineCount;
+            cyclesinc = yabsys.DecilineStop / DECILINE_STEP;
             state = HBLANKOUT;
          break;
          case HBLANKOUT:
             PROFILE_START("hblankout");
-
             Vdp2HBlankOUT();
+	    emulate(cyclesinc * (1.0-HBLANK_CYCLES_RATIO));
+	    emulate(cyclesinc);
+            yabsys.LineCount = (yabsys.LineCount+1)%yabsys.MaxLineCount;
             PROFILE_STOP("hblankout");
 #ifndef USE_SCSP2
             PROFILE_START("SCSP");
@@ -769,6 +773,9 @@ int totalSSH2CyclesRequested = 0;
             PROFILE_STOP("SCSP");
 #endif
             if (yabsys.LineCount == (yabsys.MaxLineCount-1)) {
+                oneframeexec = 1;
+            }
+            if (yabsys.LineCount == (yabsys.VBlankLineCount)) {
                state = VBLANKIN;
             } else {
                state = LINE;
@@ -776,8 +783,9 @@ int totalSSH2CyclesRequested = 0;
          break;
          case LINE:
             emulate(cyclesinc);
+            cyclesinc = cyclesstep;
             yabsys.DecilineCount++;
-            if (yabsys.DecilineCount == DECILINE_STEP_LINE) {
+            if (yabsys.DecilineCount == DECILINE_STEP - 2) {
                state = HBLANKIN;
             }
          break;
