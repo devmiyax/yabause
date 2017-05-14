@@ -550,6 +550,32 @@ void Vdp2HBlankOUT(void) {
 
       *Vdp2External.perline_alpha |= Vdp2Lines[yabsys.LineCount].CLOFEN;
     }
+    if ((Vdp1Regs->PTMR == 1) && (Vdp1External.plot_trigger_mode == yabsys.LineCount)) {
+        if (Vdp1External.plot_trigger_delay == 0) { 
+#if YAB_ASYNC_RENDERING
+
+        FRAMELOG("VDP1: VDPEV_DIRECT_DRAW %d/%d", YaGetQueueSize(vdp1_rcv_evqueue), yabsys.LineCount);
+        if ( YaGetQueueSize(vdp1_rcv_evqueue) > 0){
+          yabsys.wait_line_count = -1;
+          do{
+            YabWaitEventQueue(vdp1_rcv_evqueue);
+          } while (YaGetQueueSize(vdp1_rcv_evqueue) != 0);
+        }
+        Vdp1Regs->EDSR >>= 1;
+        yabsys.wait_line_count = yabsys.LineCount + 50;
+        yabsys.wait_line_count %= yabsys.MaxLineCount;
+        FRAMELOG("SET DIRECT WAIT %d", yabsys.wait_line_count);
+        YabAddEventQueue(evqueue,VDPEV_DIRECT_DRAW); 
+#else
+        FRAMELOG("VDP1: VDPEV_DIRECT_DRAW\n");
+        Vdp1Regs->EDSR >>= 1;
+        Vdp1Draw(); 
+        VIDCore->Vdp1DrawEnd();
+#endif
+        } else {
+            Vdp1External.plot_trigger_delay--;
+        }
+     }
 
 #if defined(YAB_ASYNC_RENDERING)
   if (yabsys.wait_line_count != -1 && yabsys.LineCount == yabsys.wait_line_count){
@@ -819,7 +845,7 @@ void Vdp2VBlankOUT(void) {
     }
 
     // Plot trigger mode = Draw when frame is changed
-    if (Vdp1Regs->PTMR != 0){
+    if ((Vdp1Regs->PTMR == 2) || ((Vdp1Regs->PTMR == 1) && (Vdp1External.plot_trigger_mode > yabsys.LineCount))){
       Vdp1External.frame_change_plot = 1;
       FRAMELOG("frame_change_plot 1");
     }
