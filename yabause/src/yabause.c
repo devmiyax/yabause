@@ -720,7 +720,7 @@ int totalSSH2CyclesRequested = 0;
 #endif
 
 
-   screenState state = VBLANK;
+   screenState state = VBLANKOUT;
    yabsys.LineCount = 0;
    while (!oneframeexec)
    {
@@ -734,13 +734,13 @@ int totalSSH2CyclesRequested = 0;
             Vdp2VBlankIN();
             PROFILE_STOP("vblankin");
             CheatDoPatches();
-            state = LINE;
+            state = VBLANK;
          break;
          case VBLANK:
             emulate(cyclesinc * VBLANK_CYCLES_RATIO);
 	    Vdp2VBlank();
             cyclesinc -= cyclesinc * VBLANK_CYCLES_RATIO;
-            state = VBLANKOUT;
+            state = LINE;
          break;
          case VBLANKOUT:
             PROFILE_START("vblankout");
