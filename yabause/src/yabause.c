@@ -762,7 +762,7 @@ int totalSSH2CyclesRequested = 0;
          break;
          case HBLANKOUT:
             PROFILE_START("hblankout");
-            Vdp2HBlankOUT();
+            Vdp2HBlankOUT(yabsys.LineCount < yabsys.VBlankLineCount);
 	    emulate(cyclesinc * (1.0-HBLANK_CYCLES_RATIO));
 	    emulate(cyclesinc);
             PROFILE_STOP("hblankout");

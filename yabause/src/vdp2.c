@@ -495,10 +495,12 @@ void Vdp2HBlankIN(void) {
       SH2SendInterrupt(SSH2, 0x41, 0x2);
 }
 
-void Vdp2HBlankOUT(void) {
+void Vdp2HBlankOUT(int isDisplayed) {
   int i;
   Vdp2Regs->TVSTAT &= ~0x0004;
 
+  if (isDisplayed)
+  {
     u32 cell_scroll_table_start_addr = (Vdp2Regs->VCSTA.all & 0x7FFFE) << 1;
     memcpy(Vdp2Lines + yabsys.LineCount, Vdp2Regs, sizeof(Vdp2));
     for (i = 0; i < 88; i++)
@@ -550,6 +552,7 @@ void Vdp2HBlankOUT(void) {
 
       *Vdp2External.perline_alpha |= Vdp2Lines[yabsys.LineCount].CLOFEN;
     }
+  }
     if ((Vdp1Regs->PTMR == 1) && (Vdp1External.plot_trigger_mode == yabsys.LineCount)) {
         if (Vdp1External.plot_trigger_delay == 0) { 
 #if YAB_ASYNC_RENDERING
