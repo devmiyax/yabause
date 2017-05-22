@@ -335,6 +335,7 @@ static void LinuxJoyDeInit(perlinuxjoy_struct * joystick)
    free(joystick->axis);
 }
 
+static int last_key = 0x1FFFF;
 static void LinuxJoyHandleEvents(perlinuxjoy_struct * joystick)
 {
    struct js_event evt;
@@ -362,12 +363,16 @@ static void LinuxJoyHandleEvents(perlinuxjoy_struct * joystick)
       key = PACKEVENT(evt, joystick);
       if (evt.value != 0)
       {
-         if ((key & 0x1FFFF) != 0x1FFFF) PerKeyDown(key);
+         if ((key & 0x1FFFF) != 0x1FFFF) {
+           PerKeyDown(key);
+           last_key = key;
+         }
       }
       else
       {
-         if ((key & 0x1FFFF) != 0x1FFFF) PerKeyUp(key);
-         if ((key & 0x1FFFF) != 0x1FFFF) PerKeyUp(0x10000 | key);
+         if ((last_key & 0x1FFFF) != 0x1FFFF) PerKeyUp(last_key);
+         if ((last_key & 0x1FFFF) != 0x1FFFF) PerKeyUp(0x10000 | last_key);
+         last_key = 0x1FFFF;
       }
    }
 }
