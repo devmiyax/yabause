@@ -216,7 +216,11 @@ void YuiInit() {
 #else
 	yinit.vidcoretype = VIDCORE_OGL; //VIDCORE_SOFT  
 #endif
+#ifdef HAVE_LIBSDL
 	yinit.sndcoretype = SNDCORE_SDL;
+#else
+	yinit.sndcoretype = 0;
+#endif
 	yinit.cdcoretype = CDCORE_DEFAULT;
 	yinit.carttype = CART_DRAM32MBIT;
 	yinit.regionid = REGION_EUROPE;
