@@ -555,13 +555,29 @@ typedef enum {
 int msh2cdiff = 0;
 int ssh2cdiff = 0;
 
+unsigned int m68kcycles;       // Integral M68k cycles per call
+unsigned int m68kcenticycles;  // 1/100 M68k cycles per call
+
+void setupM68KCycleCount(void) {
+   if (yabsys.IsPal)
+   {
+      /* 11.2896MHz / 50Hz / 313 lines / 10 calls/line = 72.20 cycles/call */
+      m68kcycles = yabsys.DecilineMode ? (int)(722/DECILINE_STEP) : 722;
+      m68kcenticycles = yabsys.DecilineMode ? (int)(((722.0/DECILINE_STEP) - m68kcycles)*100)  : 0;
+   }
+   else
+   {
+      /* 11.2896MHz / 60Hz / 263 lines / 10 calls/line = 71.62 cycles/call */
+      m68kcycles = yabsys.DecilineMode ? (int)(716/DECILINE_STEP) : 716;
+      m68kcenticycles = yabsys.DecilineMode ? (int)(((716.2/DECILINE_STEP) - m68kcycles)*100)  : 20;
+   }
+}
+
 void emulate(int cycles) {
    const u32 usecinc =
       yabsys.DecilineMode ? yabsys.DecilineUsec : yabsys.DecilineUsec * DECILINE_STEP;
 
 #ifndef USE_SCSP2
-   unsigned int m68kcycles;       // Integral M68k cycles per call
-   unsigned int m68kcenticycles;  // 1/100 M68k cycles per call
 
    u32 m68k_cycles_per_deciline = 0;
    u32 scsp_cycles_per_deciline = 0;
@@ -586,18 +602,7 @@ void emulate(int cycles) {
    }
    else
    {
-      if (yabsys.IsPal)
-      {
-         /* 11.2896MHz / 50Hz / 313 lines / 10 calls/line = 72.20 cycles/call */
-         m68kcycles = yabsys.DecilineMode ? (int)(722/DECILINE_STEP) : 722;
-         m68kcenticycles = yabsys.DecilineMode ? (int)(((722.0/DECILINE_STEP) - m68kcycles)*100)  : 0;
-      }
-      else
-      {
-         /* 11.2896MHz / 60Hz / 263 lines / 10 calls/line = 71.62 cycles/call */
-         m68kcycles = yabsys.DecilineMode ? (int)(716/DECILINE_STEP) : 716;
-         m68kcenticycles = yabsys.DecilineMode ? (int)(((716.2/DECILINE_STEP) - m68kcycles)*100)  : 20;
-      }
+      setupM68KCycleCount();
    }
 #endif
 
@@ -702,6 +707,7 @@ int YabauseEmulate(void) {
 
    #if defined(SH2_DYNAREC)
    if(SH2Core->id==2) {
+     setupM68KCycleCount();
      if (yabsys.IsPal)
        YabauseDynarecOneFrameExec(722,0); // m68kcycles,m68kcenticycles
      else
