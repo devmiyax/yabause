@@ -495,7 +495,7 @@ void Vdp2HBlankIN(void) {
       SH2SendInterrupt(SSH2, 0x41, 0x2);
 }
 
-void Vdp2HBlankOUT(int isDisplayed) {
+static void Vdp2HBlankOUT_displayed(int isDisplayed) {
   int i;
   Vdp2Regs->TVSTAT &= ~0x0004;
 
@@ -592,6 +592,10 @@ void Vdp2HBlankOUT(int isDisplayed) {
     FrameProfileAdd("DirectDraw sync");
    }
 #endif
+}
+
+void Vdp2HBlankOUT() {
+   Vdp2HBlankOUT_displayed(yabsys.LineCount < yabsys.VBlankLineCount);
 }
 
 //////////////////////////////////////////////////////////////////////////////
