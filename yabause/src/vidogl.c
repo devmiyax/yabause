@@ -36,6 +36,9 @@
 #include "ygl.h"
 #include "yui.h"
 #include "frameprofile.h"
+#ifdef SPRITE_CACHE
+#include "patternManager.h"
+#endif
 
 static Vdp2 baseVdp2Regs;
 static Vdp2 * fixVdp2Regs=NULL;
@@ -582,15 +585,13 @@ static u32 FASTCALL Vdp1ReadPolygonColor(vdp1cmd_struct *cmd)
   return color;
 }
 
-
-
 static void FASTCALL Vdp1ReadTexture(vdp1cmd_struct *cmd, YglSprite *sprite, YglTexture *texture)
 {
   int shadow = 0;
   int normalshadow = 0;
   int priority = 0;
   int colorcl = 0;
-  
+  u32* pixBuf = texture->textdata;
   int ednmode;
   int endcnt = 0;
   int nromal_shadow = 0;
@@ -606,7 +607,23 @@ static void FASTCALL Vdp1ReadTexture(vdp1cmd_struct *cmd, YglSprite *sprite, Ygl
   u8 addcolor = 0;
   int SPCCCS = (fixVdp2Regs->SPCTL >> 12) & 0x3;
   VDP1LOG("Making new sprite %08X\n", charAddr);
-   
+ 
+#ifdef SPRITE_CACHE  
+  Pattern* pattern = NULL;
+
+  pattern = getPattern(cmd, Vdp1Ram);
+  if (pattern != NULL) {
+     int characterWidth = ((cmd->CMDSIZE >> 8) & 0x3F) * 8;
+     int characterHeight = cmd->CMDSIZE & 0xFF;
+     //memcpy(pixBuf, pattern->pix, pattern->offset*sizeof(u32));
+     for (int i=0; i<characterHeight; i++) {
+        memcpy(&texture->textdata[i*(texture->w+characterWidth)], &pattern->pix[i*characterWidth], characterWidth*sizeof(u32));
+     }
+     texture->textdata+=characterHeight*(texture->w+characterWidth);
+     return;
+  }
+#endif
+
   if (/*fixVdp2Regs->SDCTL != 0 &&*/ MSB != 0 ){
     MSB_SHADOW = 1;
   }
@@ -1131,6 +1148,11 @@ static void FASTCALL Vdp1ReadTexture(vdp1cmd_struct *cmd, YglSprite *sprite, Ygl
          VDP1LOG("Unimplemented sprite color mode: %X\n", (cmd->CMDPMOD >> 3) & 0x7);
          break;
    }
+#ifdef SPRITE_CACHE
+   if (pattern == NULL) {
+	addPattern(cmd, Vdp1Ram, pixBuf, texture->w);
+   }
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -3789,6 +3811,9 @@ void VIDOGLVdp1DrawEnd(void)
 {
   YglTmPush(YglTM);
   YglRenderVDP1();
+#ifdef SPRITE_CACHE
+  releasePattern();
+#endif
   _Ygl->vpd1_running = 0;
 }
 

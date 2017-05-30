@@ -316,6 +316,12 @@ if (YAB_WANT_OPENGL AND (YAB_RGB STREQUAL ""))
 		endif()
 	endif(OPENGL_FOUND)
 endif ()
+option(SPRITE_CACHE "Vdp1 sprite cache" ON)
+if (SPRITE_CACHE)
+    add_definitions(-DSPRITE_CACHE=1)
+    set(yabause_SOURCES ${yabause_SOURCES} patternManager.c )
+    set(yabause_HEADERS ${yabause_HEADERS} patternManager.h )
+endif ()
 
 # SDL
 option(YAB_WANT_SDL "use SDL cores if available" ON)
