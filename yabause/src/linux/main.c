@@ -25,7 +25,8 @@
 #if defined(_USEGLEW_)
 #include <GL/glew.h>
 #endif
-#include <GLFW/glfw3.h>
+
+#include "platform.h"
 
 #include "../yabause.h"
 #include "../gameinfo.h"
@@ -141,9 +142,6 @@ static int lowres_mode = 0;
 static char biospath[256] = "\0";
 static char cdpath[256] = "\0";
 
-GLFWwindow* g_window = NULL;
-GLFWwindow* g_offscreen_context;
-
 yabauseinit_struct yinit;
 
 void YuiErrorMsg(const char * string) {
@@ -151,16 +149,12 @@ void YuiErrorMsg(const char * string) {
 }
 
 int YuiRevokeOGLOnThisThread(){
-#if defined(YAB_ASYNC_RENDERING)
-  glfwMakeContextCurrent(g_offscreen_context);
-#endif
+  platform_YuiRevokeOGLOnThisThread();
   return 0;
 }
 
 int YuiUseOGLOnThisThread(){
-#if defined(YAB_ASYNC_RENDERING)
-  glfwMakeContextCurrent(g_window);
-#endif
+  platform_YuiUseOGLOnThisThread();
   return 0;
 }
 
@@ -190,11 +184,7 @@ static unsigned long time_left(void)
 
 void YuiSwapBuffers(void) {
 
-   if( g_window == NULL ){
-      return;
-   }
-
-   glfwSwapBuffers(g_window);
+   platform_swapBuffers();
    SetOSDToggle(1);
 
   if (frameskip == 1)
@@ -233,43 +223,11 @@ void YuiInit() {
 	yinit.numthreads = 4;
 }
 
-void error_callback(int error, const char* description)
-{
-  fputs(description, stderr);
-}
-
 static int SetupOpenGL() {
-  if (!glfwInit())
+  int w = (lowres_mode == 0)?WINDOW_WIDTH:WINDOW_WIDTH_LOW;
+  int h = (lowres_mode == 0)?WINDOW_HEIGHT:WINDOW_HEIGHT_LOW;
+  if (!platform_SetupOpenGL(w,h))
     exit(EXIT_FAILURE);
-
-  glfwSetErrorCallback(error_callback);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-  glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API) ;
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_RED_BITS,8);
-  glfwWindowHint(GLFW_GREEN_BITS,8);
-  glfwWindowHint(GLFW_BLUE_BITS,8);
-
-  if (lowres_mode == 0){
-    g_window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Yabause", NULL, NULL);
-  } else {
-    g_window = glfwCreateWindow(WINDOW_WIDTH_LOW, WINDOW_HEIGHT_LOW, "Yabause", NULL, NULL);
-
-  }
-  if (!g_window)
-  {
-    glfwTerminate();
-    exit(EXIT_FAILURE);
-  }
-
-  glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-  g_offscreen_context = glfwCreateWindow(WINDOW_WIDTH,WINDOW_HEIGHT, "", NULL, g_window);
-
-  glfwMakeContextCurrent(g_window);
-  glfwSwapInterval(0);
-  glewExperimental=GL_TRUE;
-
 }
 
 void displayGameInfo(char *filename) {
@@ -280,12 +238,6 @@ void displayGameInfo(char *filename) {
   }
 
   printf("Game Info:\n\tSystem: %s\n\tCompany: %s\n\tItemNum:%s\n\tVersion:%s\n\tDate:%s\n\tCDInfo:%s\n\tRegion:%s\n\tPeripheral:%s\n\tGamename:%s\n", info.system, info.company, info.itemnum, info.version, info.date, info.cdinfo, info.region, info.peripheral, info.gamename);
-}
-
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
 int main(int argc, char *argv[]) {
@@ -374,8 +326,6 @@ int main(int argc, char *argv[]) {
   }
   SetupOpenGL();
 
-  glfwSetKeyCallback(g_window, key_callback);
-
 	YabauseDeInit();
 
   if (YabauseInit(&yinit) != 0) printf("YabauseInit error \n\r");
@@ -394,17 +344,15 @@ int main(int argc, char *argv[]) {
 
   nextFrameTime = getCurrentTimeUs(0) + delayUs;
 
-  while (!glfwWindowShouldClose(g_window))
+  while (!platform_shouldClose())
   {
-        if (PERCore->HandleEvents() == -1) glfwSetWindowShouldClose(g_window, GL_TRUE);
-        glfwPollEvents();
+        if (PERCore->HandleEvents() == -1) platform_Close();
+        platform_HandleEvent();
   }
 
 	YabauseDeInit();
 	LogStop();
-  glfwDestroyWindow(g_window);
-  glfwDestroyWindow(g_offscreen_context);
-  glfwTerminate();
+  platform_Deinit();
 
 	return 0;
 }
