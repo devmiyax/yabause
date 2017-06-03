@@ -32,7 +32,7 @@ set(yabause_HEADERS
 
 option(YAB_MULTIBUILD "Choose wether to build all ports or only a single one")
 set(YAB_PORT_BUILT FALSE)
-set(YAB_PORTS "sdl;qt" CACHE STRING "List of ports to build")
+set(YAB_PORTS "linux;qt" CACHE STRING "List of ports to build")
 
 		
 set(yabause_SOURCES
