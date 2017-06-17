@@ -105,6 +105,11 @@ void YabThreadWait(unsigned int id)
    	   CloseHandle(thread_handle[id].cond);
 }
 
+void YabThreadCancel(unsigned int id)
+{
+//TODO
+}
+
 void YabThreadYield(void) 
 {
 	SleepEx(0, 0);
@@ -285,6 +290,43 @@ void YabThreadFreeMutex( YabMutex * mtx ){
 
 	if (mtx != NULL){
 		DeleteCriticalSection(&((YabMutex_win32 *)mtx)->mutex);
+		free(mtx);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+typedef struct YabCond_win32
+{
+	CONDITION_VARIABLE cond;
+} YabCond_win32;
+
+
+void YabThreadCondWait(YabCond *ctx, YabMutex * mtx) {
+    YabCond_win32 * pctx;
+    YabMutex_win32 * pmtx;
+    pctx = (YabCond_win32 *)ctx;
+    pmtx = (YabMutex_win32 *)mtx;
+    YabThreadLock(mtx);
+    while( SleepConditionVariableCS (&pctx->cond, &pmtx->mutex, INFINITE) != 0 );
+    YabThreadUnLock(mtx);
+}
+
+void YabThreadCondSignal(YabCond *mtx) {
+    YabCond_win32 * pmtx;
+    pmtx = (YabCond_win32 *)mtx;
+    WakeConditionVariable (&pmtx->cond);
+}
+
+YabCond * YabThreadCreateCond(){
+
+	YabCond_win32 * mtx = (YabCond_win32 *)malloc(sizeof(YabCond_win32));
+	InitializeConditionVariable(&mtx->cond);
+	return (YabCond *)mtx;
+}
+
+void YabThreadFreeCond( YabCond *mtx ) {
+	if (mtx != NULL){
 		free(mtx);
 	}
 }
