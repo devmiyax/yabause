@@ -555,7 +555,9 @@ typedef enum {
 int msh2cdiff = 0;
 int ssh2cdiff = 0;
 
-void emulate(int cycles) {
+static int oneframeexec;
+
+void emulate(int cycles, int endOfLine) {
    const u32 usecinc =
       yabsys.DecilineMode ? yabsys.DecilineUsec : yabsys.DecilineUsec * DECILINE_STEP;
 
@@ -633,7 +635,7 @@ void emulate(int cycles) {
              }
              PROFILE_STOP("SSH2");
          }
-
+if (endOfLine == 0) return;
 #ifdef USE_SCSP2
          PROFILE_START("SCSP");
          ScspExec(1);
@@ -696,7 +698,7 @@ int YabauseEmulate(void) {
       yabsys.DecilineMode ? yabsys.DecilineStop : yabsys.DecilineStop / DECILINE_STEP;
    u32 cyclesinc = cyclesstep;
 
-   int oneframeexec = 0;
+   oneframeexec = 0;
 
    DoMovie();
 
@@ -737,7 +739,7 @@ int totalSSH2CyclesRequested = 0;
             state = VBLANK;
          break;
          case VBLANK:
-            emulate(cyclesinc * VBLANK_CYCLES_RATIO);
+            emulate(cyclesinc * VBLANK_CYCLES_RATIO, 0);
 	    Vdp2VBlank();
             cyclesinc -= cyclesinc * VBLANK_CYCLES_RATIO;
             state = LINE;
@@ -755,7 +757,7 @@ int totalSSH2CyclesRequested = 0;
             state = HBLANK;
          break;
          case HBLANK:
-            emulate(cyclesinc * HBLANK_CYCLES_RATIO);
+            emulate(cyclesinc * HBLANK_CYCLES_RATIO, 0);
             yabsys.DecilineCount = 0;
             cyclesinc = yabsys.DecilineStop / DECILINE_STEP;
             state = HBLANKOUT;
@@ -763,8 +765,8 @@ int totalSSH2CyclesRequested = 0;
          case HBLANKOUT:
             PROFILE_START("hblankout");
             Vdp2HBlankOUT();
-	    emulate(cyclesinc * (1.0-HBLANK_CYCLES_RATIO));
-	    emulate(cyclesinc);
+	    emulate(cyclesinc * (1.0-HBLANK_CYCLES_RATIO),1);
+	    emulate(cyclesinc,1);
             PROFILE_STOP("hblankout");
 #ifndef USE_SCSP2
             PROFILE_START("SCSP");
@@ -782,7 +784,7 @@ int totalSSH2CyclesRequested = 0;
             }
          break;
          case LINE:
-            emulate(cyclesinc);
+            emulate(cyclesinc, 1);
             cyclesinc = cyclesstep;
             yabsys.DecilineCount++;
             if (yabsys.DecilineCount == DECILINE_STEP - 2) {

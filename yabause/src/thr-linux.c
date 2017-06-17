@@ -86,6 +86,14 @@ void YabThreadWait(unsigned int id)
    thread_handle[id] = 0;
 }
 
+void YabThreadCancel(unsigned int id)
+{
+   if (!thread_handle[id])
+      return;  // Thread wasn't running in the first place
+
+   pthread_cancel(thread_handle[id]);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 void YabThreadYield(void)
@@ -238,7 +246,43 @@ void YabThreadFreeMutex( YabMutex * mtx ){
     }
 }
 
+//////////////////////////////////////////////////////////////////////////////
 
+typedef struct YabCond_pthread
+{
+  pthread_cond_t cond;
+} YabCond_pthread;
+
+void YabThreadCondWait(YabCond *ctx, YabMutex * mtx) {
+    YabCond_pthread * pctx;
+    YabMutex_pthread * pmtx;
+    pctx = (YabCond_pthread *)ctx;
+    pmtx = (YabMutex_pthread *)mtx; 
+    YabThreadLock(mtx);
+    while( pthread_cond_wait(&pctx->cond, &pmtx->mutex) != 0 );
+    YabThreadUnLock(mtx);
+}
+
+void YabThreadCondSignal(YabCond *mtx) {
+    YabCond_pthread * pmtx;
+    pmtx = (YabCond_pthread *)mtx;
+    pthread_cond_signal(&pmtx->cond);
+}
+
+YabCond * YabThreadCreateCond(){
+    YabCond_pthread * mtx = (YabCond_pthread *)malloc(sizeof(YabCond_pthread));
+    pthread_cond_init( &mtx->cond,NULL);
+    return (YabCond *)mtx;
+}
+
+void YabThreadFreeCond( YabCond *mtx ) {
+    if( mtx != NULL ){
+        YabCond_pthread * pmtx;
+        pmtx = (YabCond_pthread *)mtx;        
+        pthread_cond_destroy(&pmtx->cond);
+        free(pmtx);
+    }
+}
 
 #define _GNU_SOURCE
 #include <sched.h>
