@@ -724,6 +724,11 @@ int totalSSH2CyclesRequested = 0;
 
    screenState state = VBLANKOUT;
    yabsys.LineCount = 0;
+#ifndef USE_SCSP2
+            PROFILE_START("SCSP");
+            ScspExec();
+            PROFILE_STOP("SCSP");
+#endif
    while (!oneframeexec)
    {
       PROFILE_START("Total Emulation");
@@ -768,15 +773,11 @@ int totalSSH2CyclesRequested = 0;
 	    emulate(cyclesinc * (1.0-HBLANK_CYCLES_RATIO),1);
 	    emulate(cyclesinc,1);
             PROFILE_STOP("hblankout");
-#ifndef USE_SCSP2
-            PROFILE_START("SCSP");
-            ScspExec();
-            PROFILE_STOP("SCSP");
-#endif
             yabsys.LineCount++;
             if (yabsys.LineCount == yabsys.MaxLineCount) {
                 oneframeexec = 1;
             }
+            SyncScsp();
             if (yabsys.LineCount == yabsys.VBlankLineCount) {
                state = VBLANKIN;
             } else {
