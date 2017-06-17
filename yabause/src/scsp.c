@@ -5226,6 +5226,22 @@ void ScspExec(){
   ScspInternalVars->scsptiming1++;
 #else
 
+//global variables
+static YabCond *scspDone;
+static YabCond *sh2Done;
+static YabMutex *scspSh2Mut;
+
+void SyncScsp() {
+    if ((thread_running == 1) && (yabsys.LineCount == yabsys.MaxLineCount)) {
+        YabThreadCondSignal(sh2Done);
+        YabThreadCondWait(scspDone, scspSh2Mut);
+    }
+}
+ 
+void syncWithSH2() {
+    YabThreadCondSignal(scspDone);
+    YabThreadCondWait(sh2Done, scspSh2Mut);
+}
 
 void ScspAsynMain( void * p ){
 
@@ -5233,8 +5249,8 @@ void ScspAsynMain( void * p ){
   u64 now;
   u32 difftime;
   const int samplecnt = 256; // 11289600/44100
-  const int step = 16;
-  const int frame_div = 4;
+  const int step = 256;
+  const int frame_div = 1;
   const int framecnt = 188160 / frame_div; // 11289600/60
   int frame = 0;
   int frame_count = 0;
