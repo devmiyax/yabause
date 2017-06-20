@@ -37,6 +37,7 @@
 #include "threads.h"
 #include "yui.h"
 #include "frameprofile.h"
+#include "ygles.c"
 
 u8 * Vdp2Ram;
 u8 * Vdp2ColorRam;
