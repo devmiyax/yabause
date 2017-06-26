@@ -67,7 +67,7 @@ extern SH2Interface_struct SH2DebugInterpreter;
 typedef u32 (FASTCALL *fetchfunc)(u32);
 extern fetchfunc fetchlist[0x100];
 
-typedef void (FASTCALL *opcodefunc)(SH2_struct *);
+typedef int (FASTCALL *opcodefunc)(SH2_struct *);
 extern opcodefunc opcodes[0x10000];
 
 #endif
