@@ -523,12 +523,6 @@ option(YAB_WANT_ARM7 "Build a binary with arm7 support")
 # SH2 dynamic recompiler
 message(STATUS "CMAKE_SYSTEM_NAME ${CMAKE_SYSTEM_NAME}")
 message(STATUS "CMAKE_SYSTEM_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR}")
-if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
-	option(SH2_DYNAREC "SH2 dynamic recompiler" OFF)
-else ()
-	option(SH2_DYNAREC "SH2 dynamic recompiler" ON)
-endif()
-
 if (SH2_DYNAREC)
 	if( ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "Android") )
 		if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i686")
@@ -771,6 +765,12 @@ else ()
 	add_definitions(-DUNKNOWN_ARCH=1)
 	set(yabause_SOURCES ${yabause_SOURCES} sock-dummy.c thr-dummy.c)
 endif ()
+
+if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-PIE -no-pie")
+        set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -fno-PIE -no-pie")
+endif()
+
 
 set(YAB_OPTIMIZATION "-O3" CACHE STRING "Override optimization level")
 

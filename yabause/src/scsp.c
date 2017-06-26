@@ -4697,6 +4697,10 @@ SoundRamWriteByte (u32 addr, u8 val)
 u32 pre_cpu_clock = 0;
 void SyncSh2And68k(){
 
+#if defined(ASYNC_SCSP)
+  return;
+#endif
+
   u32 current_cpu_clock = YabauseGetCpuTime();
 
   //SCSPLOG("SyncSh2And68k cpu=%08X, 68k=%08X", current_cpu_clock, m68kcycle);
@@ -4921,6 +4925,7 @@ ScspDeInit (void)
   scsp_mute_flags = 0;
   thread_running = 0; 
 #if defined(ASYNC_SCSP)
+  YabThreadCancel(YAB_THREAD_SCSP);
   YabThreadWait(YAB_THREAD_SCSP);
 #endif
 
@@ -5209,6 +5214,7 @@ void new_scsp_update_samples(s32 *bufL, s32 *bufR, int scspsoundlen)
 
 //////////////////////////////////////////////////////////////////////////////
 #if !defined(ASYNC_SCSP)
+void SyncScsp() {}
 void ScspExec(){
   u32 audiosize;
 
@@ -5220,6 +5226,22 @@ void ScspExec(){
   ScspInternalVars->scsptiming1++;
 #else
 
+//global variables
+static YabCond *scspDone;
+static YabCond *sh2Done;
+static YabMutex *scspSh2Mut;
+
+void SyncScsp() {
+    if ((thread_running == 1) && (yabsys.LineCount == yabsys.MaxLineCount)) {
+        YabThreadCondSignal(sh2Done);
+        YabThreadCondWait(scspDone, scspSh2Mut);
+    }
+}
+ 
+void syncWithSH2() {
+    YabThreadCondSignal(scspDone);
+    YabThreadCondWait(sh2Done, scspSh2Mut);
+}
 
 void ScspAsynMain( void * p ){
 
@@ -5227,8 +5249,8 @@ void ScspAsynMain( void * p ){
   u64 now;
   u32 difftime;
   const int samplecnt = 256; // 11289600/44100
-  const int step = 16;
-  const int frame_div = 4;
+  const int step = 256;
+  const int frame_div = 1;
   const int framecnt = 188160 / frame_div; // 11289600/60
   int frame = 0;
   int frame_count = 0;
@@ -5277,15 +5299,15 @@ void ScspAsynMain( void * p ){
         else{
           difftime = now + (ULLONG_MAX - before);
         }
-        sleeptime = ((16666 / frame_div) - difftime);
-        if (sleeptime > 10000) YabThreadUSleep(0);
+        sleeptime = (16666 - difftime);
+        if (sleeptime > 0) YabThreadUSleep(sleeptime);
       } while (sleeptime > 0);
 
       checktime = YabauseGetTicks() * 1000000 / yabsys.tickfreq;
       //yprintf("vsynctime = %d(%d)\n", (s32)(checktime - before), (s32)(operation_time - before));
       before = checktime;
+      syncWithSH2();
     }
-    
   }
   YabThreadWake(YAB_THREAD_SCSP);
 }
@@ -5294,6 +5316,9 @@ void ScspExec(){
 
 	if (thread_running == 0){
 		thread_running = 1;
+                scspDone = YabThreadCreateCond();
+                sh2Done = YabThreadCreateCond();
+                scspSh2Mut = YabThreadCreateMutex();
 		YabThreadStart(YAB_THREAD_SCSP, ScspAsynMain, NULL);
     YabThreadUSleep(100000);
 	}
