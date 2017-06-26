@@ -45,7 +45,7 @@ typedef struct {
    int code[PERGUN_AXIS+1+SERVICE_BUTTON_NUMBER];
 } joymapping_struct;
 
-#define MAPPING_NB 3
+#define MAPPING_NB 4
 
 joymapping_struct joyMapping[MAPPING_NB] = {
    {"SZMy-power LTD CO.  Dual Box WII", 
@@ -153,6 +153,42 @@ joymapping_struct joyMapping[MAPPING_NB] = {
          -1,                      //PERGUN_AXIS
          -1,                      //SERVICE_BUTTON_EXIT
          JS_EVENT_BUTTON<<8 | 9,  //SERVICE_BUTTON_TOGGLE
+         JS_EVENT_BUTTON<<8 | 0,  //SERVICE_TOGGLE_EXIT
+      }
+   },
+   {"USB Gamepad ", 
+      {
+         0x10000 | JS_EVENT_AXIS<<8 | 1, //PERPAD_UP
+         JS_EVENT_AXIS<<8 | 0, //PERPAD_RIGHT
+         JS_EVENT_AXIS<<8 | 1, //PERPAD_DOWN
+         0x10000 | JS_EVENT_AXIS<<8 | 0, //PERPAD_LEFT
+         JS_EVENT_BUTTON<<8 | 7,  //PERPAD_RIGHT_TRIGGER
+         JS_EVENT_BUTTON<<8 | 6,  //PERPAD_LEFT_TRIGGER
+         JS_EVENT_BUTTON<<8 | 8,  //PERPAD_START
+         JS_EVENT_BUTTON<<8 | 0,  //PERPAD_A
+         JS_EVENT_BUTTON<<8 | 1,  //PERPAD_B
+         JS_EVENT_BUTTON<<8 | 2,  //PERPAD_C
+         JS_EVENT_BUTTON<<8 | 3,  //PERPAD_X
+         JS_EVENT_BUTTON<<8 | 4,  //PERPAD_Y
+         JS_EVENT_BUTTON<<8 | 5,  //PERPAD_Z
+         -1,                      //PERMOUSE_LEFT
+         -1,                      //PERMOUSE_MIDDLE
+         -1,                      //PERMOUSE_RIGHT
+         -1,                      //PERMOUSE_START
+         -1,                      //PERMOUSE_AXIS
+         -1,                      //PERANALOG_AXIS1
+         -1,                      //PERANALOG_AXIS2
+         -1,                      //PERANALOG_AXIS3
+         -1,                      //PERANALOG_AXIS4
+         -1,                      //PERANALOG_AXIS5
+         -1,                      //PERANALOG_AXIS6
+         -1,                      //PERANALOG_AXIS7
+         -1,                      //PERGUN_TRIGGER
+         -1,
+         -1,                      //PERGUN_START
+         -1,                      //PERGUN_AXIS
+         -1,                      //SERVICE_BUTTON_EXIT
+         JS_EVENT_BUTTON<<8 | 8,  //SERVICE_BUTTON_TOGGLE
          JS_EVENT_BUTTON<<8 | 0,  //SERVICE_TOGGLE_EXIT
       }
    },

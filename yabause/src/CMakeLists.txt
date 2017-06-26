@@ -32,7 +32,7 @@ set(yabause_HEADERS
 
 option(YAB_MULTIBUILD "Choose wether to build all ports or only a single one")
 set(YAB_PORT_BUILT FALSE)
-set(YAB_PORTS "sdl;qt" CACHE STRING "List of ports to build")
+set(YAB_PORTS "linux;qt" CACHE STRING "List of ports to build")
 
 		
 set(yabause_SOURCES
@@ -316,6 +316,12 @@ if (YAB_WANT_OPENGL AND (YAB_RGB STREQUAL ""))
 		endif()
 	endif(OPENGL_FOUND)
 endif ()
+option(SPRITE_CACHE "Vdp1 sprite cache" OFF)
+if (SPRITE_CACHE)
+    add_definitions(-DSPRITE_CACHE=1)
+    set(yabause_SOURCES ${yabause_SOURCES} patternManager.c )
+    set(yabause_HEADERS ${yabause_HEADERS} patternManager.h )
+endif ()
 
 # SDL
 option(YAB_WANT_SDL "use SDL cores if available" ON)
@@ -523,12 +529,7 @@ option(YAB_WANT_ARM7 "Build a binary with arm7 support")
 # SH2 dynamic recompiler
 message(STATUS "CMAKE_SYSTEM_NAME ${CMAKE_SYSTEM_NAME}")
 message(STATUS "CMAKE_SYSTEM_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR}")
-if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
-	option(SH2_DYNAREC "SH2 dynamic recompiler" OFF)
-else ()
-	option(SH2_DYNAREC "SH2 dynamic recompiler" ON)
-endif()
-
+option(SH2_DYNAREC "SH2 dynamic recompiler" ON)
 if (SH2_DYNAREC)
 	if( ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "Android") )
 		if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i686")
@@ -771,6 +772,12 @@ else ()
 	add_definitions(-DUNKNOWN_ARCH=1)
 	set(yabause_SOURCES ${yabause_SOURCES} sock-dummy.c thr-dummy.c)
 endif ()
+
+if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-PIE -no-pie")
+        set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -fno-PIE -no-pie")
+endif()
+
 
 set(YAB_OPTIMIZATION "-O3" CACHE STRING "Override optimization level")
 
