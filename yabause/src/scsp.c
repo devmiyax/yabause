@@ -5278,7 +5278,7 @@ void ScspAsynMain( void * p ){
           difftime = now + (ULLONG_MAX - before);
         }
         sleeptime = ((16666 / frame_div) - difftime);
-        if (sleeptime > 10000) YabThreadUSleep(0);
+        if (sleeptime > 0) YabThreadUSleep(sleeptime);
       } while (sleeptime > 0);
 
       checktime = YabauseGetTicks() * 1000000 / yabsys.tickfreq;
