@@ -1,0 +1,13 @@
+# Target labels
+ c68kinc
+# Source files and their labels
+/home/francois/workspace/uoyabause/yabause/build/src/CMakeFiles/c68kinc
+/home/francois/workspace/uoyabause/yabause/build/src/CMakeFiles/c68kinc.rule
+/home/francois/workspace/uoyabause/yabause/build/src/CMakeFiles/c68kinc-complete.rule
+/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-install.rule
+/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-mkdir.rule
+/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-download.rule
+/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-update.rule
+/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-patch.rule
+/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-configure.rule
+/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-build.rule

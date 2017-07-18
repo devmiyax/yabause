@@ -1,0 +1,227 @@
+Checking whether the ASM_NASM compiler is GNU using "--version" did not match "(GNU assembler)|(GCC)|(Free Software Foundation)":
+nasm: error: unrecognised option `--version'
+nasm: error: no input file specified
+type `nasm -h' for help
+Checking whether the ASM_NASM compiler is HP using "-V" did not match "HP C":
+nasm: error: unrecognised option `-V'
+nasm: error: no input file specified
+type `nasm -h' for help
+Checking whether the ASM_NASM compiler is Intel using "--version" did not match "(ICC)":
+nasm: error: unrecognised option `--version'
+nasm: error: no input file specified
+type `nasm -h' for help
+Checking whether the ASM_NASM compiler is SunPro using "-V" did not match "Sun C":
+nasm: error: unrecognised option `-V'
+nasm: error: no input file specified
+type `nasm -h' for help
+Checking whether the ASM_NASM compiler is XL using "-qversion" did not match "XL C":
+nasm: error: unrecognised option `-q'
+nasm: error: no input file specified
+type `nasm -h' for help
+Checking whether the ASM_NASM compiler is MSVC using "/?" did not match "Microsoft":
+nasm: warning: file name already has no extension: output will be in `nasm.out'
+nasm: fatal: unable to open input file `/?'
+Checking whether the ASM_NASM compiler is TI using "-h" did not match "Texas Instruments":
+usage: nasm [-@ response file] [-o outfile] [-f format] [-l listfile]
+            [options...] [--] filename
+    or nasm -v (or --v) for version info
+
+    -t          assemble in SciTech TASM compatible mode
+    -E (or -e)  preprocess only (writes output to stdout by default)
+    -a          don't preprocess (assemble only)
+    -M          generate Makefile dependencies on stdout
+    -MG         d:o, missing files assumed generated
+    -MF <file>  set Makefile dependency file
+    -MD <file>  assemble and generate dependencies
+    -MT <file>  dependency target name
+    -MQ <file>  dependency target name (quoted)
+    -MP         emit phony target
+
+    -Z<file>    redirect error messages to file
+    -s          redirect error messages to stdout
+
+    -g          generate debugging information
+
+    -F format   select a debugging format
+
+    -gformat    same as -g -F format
+
+    -o outfile  write output to an outfile
+
+    -f format   select an output format
+
+    -l listfile write listing to a listfile
+
+    -I<path>    adds a pathname to the include file path
+    -O<digit>   optimize branch offsets
+                -O0: No optimization
+                -O1: Minimal optimization
+                -Ox: Multipass optimization (default)
+
+    -P<file>    pre-includes a file
+    -D<macro>[=<value>] pre-defines a macro
+    -U<macro>   undefines a macro
+    -X<format>  specifies error reporting format (gnu or vc)
+    -w+foo      enables warning foo (equiv. -Wfoo)
+    -w-foo      disable warning foo (equiv. -Wno-foo)
+
+    -h          show invocation summary and exit
+
+--prefix,--postfix
+  this options prepend or append the given argument to all
+  extern and global variables
+Warnings:
+    error                   treat warnings as errors (default off)
+    macro-params            macro calls with wrong parameter count (default on)
+    macro-selfref           cyclic macro references (default off)
+    macro-defaults          macros with more default than optional parameters (default on)
+    orphan-labels           labels alone on lines without trailing `:' (default on)
+    number-overflow         numeric constant does not fit (default on)
+    gnu-elf-extensions      using 8- or 16-bit relocation in ELF32, a GNU extension (default off)
+    float-overflow          floating point overflow (default on)
+    float-denorm            floating point denormal (default off)
+    float-underflow         floating point underflow (default off)
+    float-toolong           too many digits in floating-point number (default on)
+    user                    %warning directives (default on)
+    lock                    lock prefix on unlockable instructions (default on)
+    hle                     invalid hle prefixes (default on)
+    bnd                     invalid bnd prefixes (default on)
+    zext-reloc              relocation zero-extended to match output format (default on)
+    ptr                     non-NASM keyword used in other assemblers (default on)
+
+response files should contain command line parameters, one per line.
+
+For a list of valid output formats, use -hf.
+For a list of debug formats, use -f <form> -y.
+Checking whether the ASM_NASM compiler is GNU using "--version" did not match "(GNU assembler)|(GCC)|(Free Software Foundation)":
+nasm: error: unrecognised option `--version'
+nasm: error: no input file specified
+type `nasm -h' for help
+Checking whether the ASM_NASM compiler is IAR using "" did not match "IAR Assembler":
+nasm: error: no input file specified
+type `nasm -h' for help
+Checking whether the ASM_NASM compiler is ARMCC using "" did not match "(ARM Compiler)|(ARM Assembler)":
+nasm: error: no input file specified
+type `nasm -h' for help
+Determining if the function _wfopen exists failed with the following output:
+Change Dir: /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_8b947/fast"
+/usr/bin/make -f CMakeFiles/cmTC_8b947.dir/build.make CMakeFiles/cmTC_8b947.dir/build
+make[1] : on entre dans le répertoire « /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp »
+Building C object CMakeFiles/cmTC_8b947.dir/CheckFunctionExists.c.o
+/usr/bin/cc    -DCHECK_FUNCTION_EXISTS=_wfopen   -o CMakeFiles/cmTC_8b947.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.7/Modules/CheckFunctionExists.c
+Linking C executable cmTC_8b947
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8b947.dir/link.txt --verbose=1
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=_wfopen    CMakeFiles/cmTC_8b947.dir/CheckFunctionExists.c.o  -o cmTC_8b947 -rdynamic -lm 
+CMakeFiles/cmTC_8b947.dir/CheckFunctionExists.c.o : Dans la fonction « main » :
+CheckFunctionExists.c:(.text+0x15) : référence indéfinie vers « _wfopen »
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_8b947.dir/build.make:97 : la recette pour la cible « cmTC_8b947 » a échouée
+make[1]: *** [cmTC_8b947] Erreur 1
+make[1] : on quitte le répertoire « /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp »
+Makefile:126 : la recette pour la cible « cmTC_8b947/fast » a échouée
+make: *** [cmTC_8b947/fast] Erreur 2
+
+
+Determining if the function stricmp exists failed with the following output:
+Change Dir: /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_2a106/fast"
+/usr/bin/make -f CMakeFiles/cmTC_2a106.dir/build.make CMakeFiles/cmTC_2a106.dir/build
+make[1] : on entre dans le répertoire « /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp »
+Building C object CMakeFiles/cmTC_2a106.dir/CheckFunctionExists.c.o
+/usr/bin/cc    -DCHECK_FUNCTION_EXISTS=stricmp   -o CMakeFiles/cmTC_2a106.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.7/Modules/CheckFunctionExists.c
+Linking C executable cmTC_2a106
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2a106.dir/link.txt --verbose=1
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=stricmp    CMakeFiles/cmTC_2a106.dir/CheckFunctionExists.c.o  -o cmTC_2a106 -rdynamic -lm 
+CMakeFiles/cmTC_2a106.dir/CheckFunctionExists.c.o : Dans la fonction « main » :
+CheckFunctionExists.c:(.text+0x15) : référence indéfinie vers « stricmp »
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_2a106.dir/build.make:97 : la recette pour la cible « cmTC_2a106 » a échouée
+make[1]: *** [cmTC_2a106] Erreur 1
+make[1] : on quitte le répertoire « /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp »
+Makefile:126 : la recette pour la cible « cmTC_2a106/fast » a échouée
+make: *** [cmTC_2a106/fast] Erreur 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_132ad/fast"
+/usr/bin/make -f CMakeFiles/cmTC_132ad.dir/build.make CMakeFiles/cmTC_132ad.dir/build
+make[1] : on entre dans le répertoire « /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp »
+Building C object CMakeFiles/cmTC_132ad.dir/CheckSymbolExists.c.o
+/usr/bin/cc     -o CMakeFiles/cmTC_132ad.dir/CheckSymbolExists.c.o   -c /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_132ad
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_132ad.dir/link.txt --verbose=1
+/usr/bin/cc       CMakeFiles/cmTC_132ad.dir/CheckSymbolExists.c.o  -o cmTC_132ad -rdynamic -lm 
+CMakeFiles/cmTC_132ad.dir/CheckSymbolExists.c.o : Dans la fonction « main » :
+CheckSymbolExists.c:(.text+0x1b) : référence indéfinie vers « pthread_create »
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_132ad.dir/build.make:97 : la recette pour la cible « cmTC_132ad » a échouée
+make[1]: *** [cmTC_132ad] Erreur 1
+make[1] : on quitte le répertoire « /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp »
+Makefile:126 : la recette pour la cible « cmTC_132ad/fast » a échouée
+make: *** [cmTC_132ad/fast] Erreur 2
+
+File /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_ad3de/fast"
+/usr/bin/make -f CMakeFiles/cmTC_ad3de.dir/build.make CMakeFiles/cmTC_ad3de.dir/build
+make[1] : on entre dans le répertoire « /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp »
+Building C object CMakeFiles/cmTC_ad3de.dir/CheckFunctionExists.c.o
+/usr/bin/cc    -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_ad3de.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.7/Modules/CheckFunctionExists.c
+Linking C executable cmTC_ad3de
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ad3de.dir/link.txt --verbose=1
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_ad3de.dir/CheckFunctionExists.c.o  -o cmTC_ad3de -rdynamic -lpthreads -lm 
+/usr/bin/ld : ne peut trouver -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_ad3de.dir/build.make:97 : la recette pour la cible « cmTC_ad3de » a échouée
+make[1]: *** [cmTC_ad3de] Erreur 1
+make[1] : on quitte le répertoire « /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp »
+Makefile:126 : la recette pour la cible « cmTC_ad3de/fast » a échouée
+make: *** [cmTC_ad3de/fast] Erreur 2
+
+
+Performing C SOURCE FILE Test LINUX_CDROM_H_OK failed with the following output:
+Change Dir: /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_adb0b/fast"
+/usr/bin/make -f CMakeFiles/cmTC_adb0b.dir/build.make CMakeFiles/cmTC_adb0b.dir/build
+make[1] : on entre dans le répertoire « /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp »
+Building C object CMakeFiles/cmTC_adb0b.dir/src.c.o
+/usr/bin/cc    -DLINUX_CDROM_H_OK   -o CMakeFiles/cmTC_adb0b.dir/src.c.o   -c /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp/src.c
+In file included from /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp/src.c:2:0:
+/home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp/src.c: In function ‘main’:
+/home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp/src.c:3:47: error: ‘INT_MAX’ undeclared (first use in this function)
+    int main(int argc, char ** argv) { int i = CDSL_CURRENT; }
+                                               ^
+/home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp/src.c:3:47: note: each undeclared identifier is reported only once for each function it appears in
+CMakeFiles/cmTC_adb0b.dir/build.make:65 : la recette pour la cible « CMakeFiles/cmTC_adb0b.dir/src.c.o » a échouée
+make[1]: *** [CMakeFiles/cmTC_adb0b.dir/src.c.o] Erreur 1
+make[1] : on quitte le répertoire « /home/francois/workspace/uoyabause/yabause/build/CMakeFiles/CMakeTmp »
+Makefile:126 : la recette pour la cible « cmTC_adb0b/fast » a échouée
+make: *** [cmTC_adb0b/fast] Erreur 2
+
+Source file was:
+
+			#include <linux/cdrom.h>
+			int main(int argc, char ** argv) { int i = CDSL_CURRENT; }
+		

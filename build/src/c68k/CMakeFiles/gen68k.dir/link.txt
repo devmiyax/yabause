@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/gen68k.dir/c68kexec.c.o CMakeFiles/gen68k.dir/c68k.c.o CMakeFiles/gen68k.dir/gen68k.c.o  -o gen68k -rdynamic 

@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/CMakeFiles/m68kmake"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/CMakeFiles/m68kmake.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/CMakeFiles/m68kmake-complete.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-install.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-mkdir.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-download.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-update.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-patch.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-configure.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"m68kmake"
+		],
+		"name" : "m68kmake"
+	}
+}

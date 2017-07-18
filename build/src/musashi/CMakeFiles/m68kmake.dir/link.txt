@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/m68kmake.dir/m68kmake.c.o  -o m68kmake -rdynamic 

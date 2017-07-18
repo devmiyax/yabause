@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/francois/workspace/uoyabause/yabause/yabause/src/musashi/m68kmake.c
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+ctype.h
+-
+stdarg.h
+-
+

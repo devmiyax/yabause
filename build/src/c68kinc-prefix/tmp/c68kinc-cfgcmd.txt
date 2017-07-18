@@ -1,0 +1,1 @@
+cmd='/usr/bin/cmake;-GUnix Makefiles;/home/francois/workspace/uoyabause/yabause/yabause/src/c68k'

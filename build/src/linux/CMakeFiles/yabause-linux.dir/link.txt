@@ -1,0 +1,1 @@
+/usr/bin/c++      -fno-PIE -no-pie CMakeFiles/yabause-linux.dir/platform/glfw/platform.c.o CMakeFiles/yabause-linux.dir/main.c.o  -o yabause -rdynamic ../libyabause.a -lz -lm -lpthread -lGLU -lGL -Wl,-Bstatic -lSDL2main -Wl,-Bdynamic -lSDL2 -lpthread -lopenal -lXrandr -lX11 -lglfw -lGLU -lGL -Wl,-Bstatic -lSDL2main -Wl,-Bdynamic -lSDL2 -lopenal -lXrandr -lX11 -lglfw 

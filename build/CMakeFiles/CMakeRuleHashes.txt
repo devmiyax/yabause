@@ -1,0 +1,19 @@
+# Hashes of file build rules.
+21f29ddf8e296fbf2ba527e6ed1dd325 src/CMakeFiles/c68kinc
+c397905ee1ee672325db770ed293e8bb src/CMakeFiles/c68kinc-complete
+21f29ddf8e296fbf2ba527e6ed1dd325 src/CMakeFiles/m68kmake
+a5641548506c312118b28f2281c15b04 src/CMakeFiles/m68kmake-complete
+96efa987ab9dd2d53a58141ea4a991ac src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-build
+27171dffb1fdba27f92cd4ca72b44a72 src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-configure
+01f2c615ef0c1ca6792f84bbf710d459 src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-download
+e968ff2645ab92ee90924b8326e51553 src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-install
+f031ce482d87538183ea884881205758 src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-mkdir
+3b97ce1c2f335ab77e7548491a24b62e src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-patch
+3253daba405148c3f67b7d1c4788dca8 src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-update
+d148ac2da3ca95ba0f089612ab248c71 src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-build
+29a84605a21e82d54f23afb0c01c9131 src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-configure
+040a638b521ae5b42cfc3cd1315bb15a src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-download
+ce33cd26ef1263ebce15203a10b6e2fa src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-install
+95b9532fbf30b9bdac691706cbb553d1 src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-mkdir
+b8e3fad182af8ab28b66b0c2915b96bb src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-patch
+ff152e7add3e1a3fb9c41516e5d6eda3 src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-update

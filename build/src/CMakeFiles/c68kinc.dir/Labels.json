@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/CMakeFiles/c68kinc"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/CMakeFiles/c68kinc.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/CMakeFiles/c68kinc-complete.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-install.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-mkdir.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-download.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-update.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-patch.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-configure.rule"
+		},
+		{
+			"file" : "/home/francois/workspace/uoyabause/yabause/build/src/c68kinc-prefix/src/c68kinc-stamp/c68kinc-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"c68kinc"
+		],
+		"name" : "c68kinc"
+	}
+}

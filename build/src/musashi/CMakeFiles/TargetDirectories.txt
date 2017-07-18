@@ -1,0 +1,4 @@
+/home/francois/workspace/uoyabause/yabause/build/src/musashi/CMakeFiles/rebuild_cache.dir
+/home/francois/workspace/uoyabause/yabause/build/src/musashi/CMakeFiles/edit_cache.dir
+/home/francois/workspace/uoyabause/yabause/build/src/musashi/CMakeFiles/musashi.dir
+/home/francois/workspace/uoyabause/yabause/build/src/musashi/CMakeFiles/m68kmake.dir

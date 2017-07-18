@@ -1,0 +1,13 @@
+# Target labels
+ m68kmake
+# Source files and their labels
+/home/francois/workspace/uoyabause/yabause/build/src/CMakeFiles/m68kmake
+/home/francois/workspace/uoyabause/yabause/build/src/CMakeFiles/m68kmake.rule
+/home/francois/workspace/uoyabause/yabause/build/src/CMakeFiles/m68kmake-complete.rule
+/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-install.rule
+/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-mkdir.rule
+/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-download.rule
+/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-update.rule
+/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-patch.rule
+/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-configure.rule
+/home/francois/workspace/uoyabause/yabause/build/src/m68kmake-prefix/src/m68kmake-stamp/m68kmake-build.rule
