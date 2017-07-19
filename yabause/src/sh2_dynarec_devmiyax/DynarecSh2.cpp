@@ -1279,7 +1279,7 @@ int DynarecSh2::Execute(){
 #ifndef TEST_MODE
       BiosHandleFunc(ctx_);
 #endif
-      return IN_INFINITY_LOOP;
+      return 0;
     }
     pBlock = m_pCompiler->LookupTableRom[(GET_PC() & 0x0007FFFF) >> 1];
     if( pBlock == NULL )
