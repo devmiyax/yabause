@@ -1470,7 +1470,7 @@ int DynarecSh2::InterruptRutine(u8 Vector, u8 level)
   return 0; 
 }
 
-
+#ifndef TEST_MODE
 int DynarecSh2GetDisasmebleString(string & out, u32 from, u32 to) {
   char linebuf[128];
   if (from > to) return -1;
@@ -1481,6 +1481,7 @@ int DynarecSh2GetDisasmebleString(string & out, u32 from, u32 to) {
   }
   return 0;
 }
+#endif
 
 int DynarecSh2::Resume() {
   statics_trigger_ = NORMAL;

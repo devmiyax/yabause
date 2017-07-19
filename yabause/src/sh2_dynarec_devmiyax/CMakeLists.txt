@@ -95,7 +95,7 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 #--------------------------------------------------------------
 enable_testing()
 find_package( Threads )
-set(PROJECT_TEST_NAME ${PROJECT_NAME_STR}_test)
+set(PROJECT_TEST_NAME Compatibility_test)
 include_directories(${GTEST_INCLUDE_DIRS} ${COMMON_INCLUDES})
 
 file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
