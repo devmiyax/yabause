@@ -246,6 +246,15 @@ void displayGameInfo(char *filename) {
   printf("Game Info:\n\tSystem: %s\n\tCompany: %s\n\tItemNum:%s\n\tVersion:%s\n\tDate:%s\n\tCDInfo:%s\n\tRegion:%s\n\tPeripheral:%s\n\tGamename:%s\n", info.system, info.company, info.itemnum, info.version, info.date, info.cdinfo, info.region, info.peripheral, info.gamename);
 }
 
+void initEmulation() {
+   YuiInit();
+   SetupOpenGL();
+   if (YabauseSh2Init(&yinit) != 0) {
+    printf("YabauseSh2Init error \n\r");
+    return;
+  }
+}
+#ifndef TEST_MODE
 int main(int argc, char *argv[]) {
 	int i;
 
@@ -375,3 +384,4 @@ printf("Use SW core emulation\n");
 
 	return 0;
 }
+#endif
