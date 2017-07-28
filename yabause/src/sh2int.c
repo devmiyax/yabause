@@ -250,11 +250,9 @@ static void FASTCALL SH2delay(SH2_struct * sh, u32 addr)
    sh->pchistory[sh->pchistory_index & 0xFF] = addr;
    sh->regshistory[sh->pchistory_index & 0xFF] = sh->regs;
 #endif
-
    // Execute it
    sh->regs.PC -= 2;
    opcodes[sh->instruction](sh);
-   
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -425,10 +423,10 @@ static void FASTCALL SH2bf(SH2_struct * sh)
 
 static void FASTCALL SH2bfs(SH2_struct * sh)
 {
+   u32 temp = sh->regs.PC;
    if (sh->regs.SR.part.T == 0)
    {
       s32 disp = (s32)(s8)sh->instruction;
-      u32 temp = sh->regs.PC;
 
       sh->regs.PC = sh->regs.PC + (disp << 1) + 4;
 
@@ -440,6 +438,7 @@ static void FASTCALL SH2bfs(SH2_struct * sh)
       sh->regs.PC += 2;
       sh->cycles++;
    }
+
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -521,10 +520,10 @@ static void FASTCALL SH2bt(SH2_struct * sh)
 
 static void FASTCALL SH2bts(SH2_struct * sh)
 {
+   u32 temp = sh->regs.PC;
    if (sh->regs.SR.part.T)
    {
       s32 disp = (s32)(s8)sh->instruction;
-      u32 temp = sh->regs.PC;
 
       sh->regs.PC += (disp << 1) + 4;
       sh->cycles += 2;
@@ -1233,7 +1232,7 @@ static void FASTCALL SH2macl(SH2_struct * sh)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-#if 1
+#if 0
 static void FASTCALL SH2macw(SH2_struct * sh)
 {
   s16 m0, m1;
@@ -2172,7 +2171,7 @@ static void FASTCALL SH2stcmvbr(SH2_struct * sh)
 static void FASTCALL SH2stcsr(SH2_struct * sh)
 {
    s32 n = INSTRUCTION_B(sh->instruction);
-   sh->regs.R[n] = sh->regs.SR.all;
+   sh->regs.R[n] = sh->regs.SR.all & 0x3F3;
    sh->regs.PC+=2;
    sh->cycles++;
 }
@@ -3019,14 +3018,14 @@ FASTCALL void SH2InterpreterExec(SH2_struct *context, u32 cycles)
 {
   u32 target_cycle = context->cycles + cycles;
   SH2HandleInterrupts(context);
-
+#if 0
 #ifndef EXEC_FROM_CACHE
    if (context->isIdle)
      SH2idleParse(context, target_cycle);
    else
      SH2idleCheck(context, target_cycle);
 #endif
-
+#endif
    while (context->cycles < target_cycle)
    {
 

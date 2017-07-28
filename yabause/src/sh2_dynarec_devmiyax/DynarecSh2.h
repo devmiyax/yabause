@@ -85,6 +85,13 @@ const int MAXBLOCKSIZE = 3072-(4*4);
 #define MAINMEMORY_SIZE (0x100000);
 #define ROM_SIZE (0x80000);
 
+typedef enum {
+  UNDEF_MEM = 0,
+  BIOS_MEM,
+  LO_MEM,
+  HI_MEM
+} MemArea;
+
 struct Block
 {
   u8  code[MAXBLOCKSIZE];
@@ -112,6 +119,7 @@ struct tagSH2
   uintptr_t setmemword;
   uintptr_t setmemlong;
   uintptr_t eachclock;
+  uintptr_t checkint;
 };
 
 // Instruction
@@ -155,10 +163,11 @@ struct x86op_desc
   unsigned char cycle;
   unsigned char write_count;
   unsigned char build_count;
+  unsigned char checkint;
 
   x86op_desc(void(*ifunc)(), const unsigned short *isize, const unsigned char *isrc,
     const unsigned char *idest, const unsigned char *ioff1, const unsigned char *iimm,
-    const unsigned char *ioff3, const unsigned char idelay, const unsigned char icycle, const unsigned char iwrite_count = 0)
+    const unsigned char *ioff3, const unsigned char idelay, const unsigned char icycle, const unsigned char iwrite_count = 0, const unsigned char icheckint = 0)
   {
     func = ifunc;
     size = isize;
@@ -171,11 +180,12 @@ struct x86op_desc
     cycle = icycle;
     write_count = iwrite_count;
     build_count = 0;
+    checkint = icheckint;
   };
 
 };
 
-#define SET_DIRTY
+//#define SET_DIRTY
 extern "C" {
   void DebugLog(const char * format, ...);
 }
@@ -331,7 +341,7 @@ public:
   inline void SET_PC( u32 v ) { m_pDynaSh2->SysReg[3] = v; }
   inline void SET_COUNT( u32 v ) { m_pDynaSh2->SysReg[4] = v; } 
   inline void SET_ICOUNT(u32 v ) { m_pDynaSh2->SysReg[5] = v; } 
-  inline void SET_SR(u32 v ) { m_pDynaSh2->CtrlReg[0] = v; }
+  inline void SET_SR(u32 v ) { m_pDynaSh2->CtrlReg[0] = v & 0x3F3; }
   inline void SET_GBR( u32 v ) { m_pDynaSh2->CtrlReg[1] = v; }
   inline void SET_VBR( u32 v ) { m_pDynaSh2->CtrlReg[2] = v; }  
 
@@ -355,7 +365,9 @@ extern "C"
 
   u8 memGetByte(u32);
   u16 memGetWord(u32);
-  u32 memGetLong(u32);  
+  u32 memGetLong(u32);
+
+  void CheckInterruptLoop();
   
 }
 

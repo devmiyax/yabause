@@ -40,13 +40,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
 CompileBlocks * CompileBlocks::instance_ = NULL;
 DynarecSh2 * DynarecSh2::CurrentContext = NULL;
-
+#ifdef DYNAREC_X64
+extern unsigned short prologue_size;
+extern unsigned short epilogue_size;
+extern unsigned short seperator_normal_size;
+extern unsigned short seperator_delay_size;
+extern unsigned short seperator_delay_slot_size;
+extern unsigned short seperator_delay_after_size;
+extern unsigned short seperator_d_normal_size;
+extern unsigned short seperator_d_delay_size;
+extern unsigned short PageFlip_size;
+extern unsigned short check_interrupt_size;
+#endif
 #if defined(ARCH_IS_LINUX)
 #include <unistd.h> // chaceflush
 
 #if !defined(ANDROID)
 void cacheflush(uintptr_t begin, uintptr_t end, int flag )
 { 
+#ifdef __arm__
     const int syscall = 0xf0002;
       __asm __volatile (
      "mov   r0, %0\n"      
@@ -58,6 +70,9 @@ void cacheflush(uintptr_t begin, uintptr_t end, int flag )
      : "r" (begin), "r" (end), "r" (syscall)
      : "r0", "r1", "r7"
     );
+#else
+__builtin___clear_cache((void*)begin, (void*)end);
+#endif
 }
 #endif
 
@@ -300,9 +315,9 @@ void DumpInstX( int i, u32 pc, u16 op  )
 
 
 
-#define opdesc(op, y, c, d)	x86op_desc(x86_##op, &op##_size, &op##_src, &op##_dest, &op##_off1, &op##_imm, &op##_off3, y, c, d)
+#define opdesc(op, y, c, d, e)	x86op_desc(x86_##op, &op##_size, &op##_src, &op##_dest, &op##_off1, &op##_imm, &op##_off3, y, c, d, e)
 
-#define opNULL			x86op_desc(0,0,0,0,0,0,0,0,0,0)
+#define opNULL			x86op_desc(0,0,0,0,0,0,0,0,0,0,0)
 
 #if _WINDOWS
 #define PROLOGSIZE		     27    
@@ -319,19 +334,33 @@ void DumpInstX( int i, u32 pc, u16 op  )
 #define NORMAL_CLOCK_OFFSET 6
 #define NORMAL_CLOCK_OFFSET_DEBUG 3
 #else
-#define PROLOGSIZE		     16    
-#define SEPERATORSIZE_NORMAL 8
-#define NORMAL_CLOCK_OFFSET 4
+#ifdef DYNAREC_X64
+#define PROLOGSIZE			(prologue_size)  
+#define SEPERATORSIZE_NORMAL		(seperator_normal_size)
+#define NORMAL_CLOCK_OFFSET 8
 #define NORMAL_CLOCK_OFFSET_DEBUG 4
-#define SEPERATORSIZE_DEBUG  36
-#define SEPERATORSIZE_DELAY_SLOT  36
-#define SEPERATORSIZE_DELAY_AFTER  20
+#define SEPERATORSIZE_DEBUG		(seperator_d_normal_size)
+#define SEPERATORSIZE_DELAY_SLOT	(seperator_delay_slot_size)
+#define SEPERATORSIZE_DELAY_AFTER	(seperator_delay_after_size)
 #define DALAY_CLOCK_OFFSET 8
-#define SEPERATORSIZE_DELAYD 60
-#define EPILOGSIZE		      12
-#define DELAYJUMPSIZE	     32
+#define SEPERATORSIZE_DELAYD		(seperator_d_delay_size)
+#define EPILOGSIZE			(epilogue_size)
+#define DELAYJUMPSIZE			(PageFlip_size)
+#else
+#define PROLOGSIZE			16  
+#define SEPERATORSIZE_NORMAL		8
+#define NORMAL_CLOCK_OFFSET 		4
+#define NORMAL_CLOCK_OFFSET_DEBUG 	4
+#define SEPERATORSIZE_DEBUG		36
+#define SEPERATORSIZE_DELAY_SLOT	36
+#define SEPERATORSIZE_DELAY_AFTER	20
+#define DALAY_CLOCK_OFFSET 		8
+#define SEPERATORSIZE_DELAYD		60
+#define EPILOGSIZE			12
+#define DELAYJUMPSIZE			32
 #endif
 
+#endif
 
 #define MININSTRSIZE    3
 #define MAXINSTRSIZE	416
@@ -339,7 +368,9 @@ void DumpInstX( int i, u32 pc, u16 op  )
 
 #define SAFEPAGESIZE	MAXBLOCKSIZE - MAXINSTRSIZE - SEPERATORSIZE_DELAY_SLOT - SEPERATORSIZE_DELAY_AFTER - SEPERATORSIZE_NORMAL - EPILOGSIZE
 #define MAXINSTRCNT		MAXBLOCKSIZE/(MININSTRSIZE+SEPERATORSIZE_NORMAL)
+#ifndef DYNAREC_X64
 int instrSize[NUMOFBLOCKS][MAXINSTRCNT];
+#endif
 
 #define opinit(x)	extern const unsigned short x##_size; \
                     extern const unsigned char x##_src, x##_dest, x##_off1, x##_imm, x##_off3; \
@@ -428,7 +459,8 @@ opinit(EXTUB);
 opinit(EXTU_W);
 opinit(EXTS_B);
 opinit(EXTS_W);
-opinit(BT)
+opinit(BT);
+opinit(BT_S);
 opinit(BF);
 opinit(BF_S);
 opinit(JMP);
@@ -497,6 +529,7 @@ void seperator_normal(void);
 void seperator_delay(void);
 void seperator_delay_slot(void);
 void seperator_delay_after(void);
+void check_interrupt(void);
 
 void seperator_d_normal(void);
 void seperator_d_delay(void);
@@ -510,150 +543,189 @@ extern x86op_desc asm_list[];
 
 x86op_desc asm_list[] =
 {
-  opdesc(CLRT,0,1,0),       
-  opdesc(CLRMAC,0,1,0),
-  opdesc(DIV0U,0,1,0),
-  opdesc(NOP,0,1,0),
-  opdesc(RTE,4,4,0),
-  opdesc(RTS,4,2,0),
-  opdesc(SETT,0,1,0),
-  opdesc(SLEEP,0,3,0),
-  opdesc(CMP_PL,0,1,0),
-  opdesc(CMP_PZ,0,1,0),
-  opdesc(DT,0,1,1),
-  opdesc(MOVT,0,1,0),
-  opdesc(ROTL,0,1,0),
-  opdesc(ROTR,0,1,0),
-  opdesc(ROTCL,0,1,0),
-  opdesc(ROTCR,0,1,0),
-  opdesc(SHL,0,1,0),
-  opdesc(SHAR,0,1,0),
-  opdesc(SHL,0,1,0),
-  opdesc(SHLR,0,1,0),
-  opdesc(SHLL2,0,1,0),
-  opdesc(SHLR2,0,1,0),
-  opdesc(SHLL8,0,1,0),
-  opdesc(SHLR8,0,1,0),
-  opdesc(SHLL16,0,1,0),
-  opdesc(SHLR16,0,1,0),
-  opdesc(STC_SR,0xFF,1,1),
-  opdesc(STC_GBR,0xFF,1,1),
-  opdesc(STC_VBR,0xFF,1,1),
-  opdesc(STS_MACH,0xFF,1,0),
-  opdesc(STS_MACL,0xFF,1,0),
-  opdesc(STS_PR,0xFF,1,0),
-  opdesc(TAS,0,4,1),         // 0x401b
-  opdesc(STC_SR_MEM,0xFF,2,1),
-  opdesc(STC_GBR_MEM,0xFF,2,1),
-  opdesc(STC_VBR_MEM,0xFF,2,1),
-  opdesc(STS_MACH_DEC,0xFF,2,1),
-  opdesc(STS_MACL_DEC,0xFF,2,1),
-  opdesc(STSMPR,0xFF,1,1),     // 0x4022
-  opdesc(LDC_SR,0xFF,1,0),
-  opdesc(LDCGBR,0xFF,1,0),
-  opdesc(LDC_VBR,0xFF,1,0),
-  opdesc(LDS_MACH,0xFF,1,0),
-  opdesc(LDS_MACL,0xFF,1,0),
-  opdesc(LDS_PR,0xFF,1,0),
-  opdesc(JMP, 3,2,0),
-  opdesc(JSR, 4,2,0),
-  opdesc(LDC_SR_INC,0xFF,3,0),  
-  opdesc(LDC_GBR_INC,0xFF,3,0),
-  opdesc(LDC_VBR_INC,0xFF,3,0),
-  opdesc(LDS_MACH_INC,0xFF,1,0),
-  opdesc(LDS_MACL_INC,0xFF,1,0),
-  opdesc(LDS_PR_INC,0xFF,1,0),
-  opdesc(BRAF,4,2,0),
-  opdesc(BSRF,4,2,0),
-  opdesc(ADD,0,1,1),
-  opdesc(ADDC,0,1,1),
-  opdesc(ADDV,0,1,0),  // 0x300F
-  opdesc(AND,0,1,0),
-  opdesc(CMP_EQ,0,1,0),
-  opdesc(CMP_HS,0,1,0),
-  opdesc(CMP_GE,0,1,0),
-  opdesc(CMP_HI,0,1,0),
-  opdesc(CMP_GT,0,1,0),
-  opdesc(CMPSTR,0,1,0), // 0x200C
-  opdesc(DIV1,0,1,0),   // 0x3004
-  opdesc(DIV0S,0,1,0),  // 0x2007
-  opdesc(DMULS,0,4,0),  // 0x300D
-  opdesc(DMULU,0,4,0),  // 0x3005
-  opdesc(EXTS_B,0,1,0),
-  opdesc(EXTS_W,0,1,0),
-  opdesc(EXTUB,0,1,0),
-  opdesc(EXTU_W,0,1,0),
-  opdesc(MOVR,0,1,0),  // 0x6003
-  opdesc(MULL,0,4,0),  // 0x0007
-  opdesc(MULS,0,3,0),  // 0x200f
-  opdesc(MULU,0,3,0),  // 0x200e
-  opdesc(NEG,0,1,0),
-  opdesc(NEGC,0,1,0),
-  opdesc(NOT,0,1,0),
-  opdesc(OR,0,1,0),
-  opdesc(SUB,0,1,0),
-  opdesc(SUBC,0,1,0),
-  opdesc(SUBV,0,1,0),  // 0x300B
-  opdesc(SWAP_B,0,1,0),
-  opdesc(SWAP_W,0,1,0),
-  opdesc(TST,0,1,0),
-  opdesc(XOR,0,1,0),
-  opdesc(XTRCT,0,1,0),
-  opdesc(MOVBS,0,1,1),
-  opdesc(MOVWS,0,1,1),
-  opdesc(MOVLS,0,1,1),
-  opdesc(MOVBL,0,1,0), // 6000
-  opdesc(MOVWL,0,1,0), // 6001
-  opdesc(MOVL_MEM_REG,0,1,0),
-  opdesc(MAC_L,0,3,0),  // 0x000f
-  opdesc(MAC_W,0,3,0),  // 0x400f
-  opdesc(MOVBP,0,1,0),  // 6004
-  opdesc(MOVWP,0,1,0),  // 6005
-  opdesc(MOVLP,0,1,1),  // 6006
-  opdesc(MOVBM,0,1,1),  // 0x2004,
-  opdesc(MOVWM,0,1, 0),  // 0x2005,
-  opdesc(MOVLM,0,1,1),  // 0x2006
-  opdesc(MOVBS0,0,1,1), // 0x0004
-  opdesc(MOVWS0,0,1,1), // 0x0005
-  opdesc(MOVLS0,0,1,1), // 0x0006
-  opdesc(MOVBL0,0,1, 0), // 0x000C
-  opdesc(MOVWL0,0,1, 0), // 0x000D 
-  opdesc(MOVLL0,0,1, 0), // 0x000E
-  opdesc(MOVBL4,0,1,1), // 0x8400
-  opdesc(MOVWL4,0,1, 0), // 0x8500
-  opdesc(MOVBS4,0,1, 0), // 0x8000
-  opdesc(MOVWS4,0,1,1), // 0x8100
-  opdesc(MOVLS4,0,1,1), // 0x1000
-  opdesc(MOVLL4,0,1, 0), // 0x5000 ,1
-  opdesc(MOVBSG,0,1,1), // 0xC000
-  opdesc(MOVWSG,0,1,1), // 0xc100
-  opdesc(MOVLSG,0,1,1), // 0xC200
-  opdesc(MOVBLG,0,1, 0), // 0xC400
-  opdesc(MOVWLG,0,1, 0), // 0xC500
-  opdesc(MOVLLG,0,1, 0), // 0xC600
-  opdesc(MOVA,0,1, 0),
-  opdesc(BF,1,3, 0),
-  opdesc(BF_S,3,2, 0),
-  opdesc(BT,1,3, 0),
-  opdesc(BT,3,2, 0),
-  opdesc(BRA,2,2, 0),
-  opdesc(BSR,2,2, 0),
-  opdesc(MOVWI,0,1, 0),
-  opdesc(MOVLI,0, 1, 0),
-  opdesc(AND_B,0,3,1),
-  opdesc(OR_B,0,3,1),
-  opdesc(TST_B,0, 1, 0),
-  opdesc(XOR_B,0,3,1),
-  opdesc(ANDI,0,1, 0),
-  opdesc(CMP_EQ_IMM,0,1, 0),
-  opdesc(ORI,0,1, 0),
-  opdesc(TSTI,0,1, 0),  // C800
-  opdesc(XORI,0,1, 0),
-  opdesc(TRAPA,5,8,1), // 0xc300
-  opdesc(ADDI,0,1, 0),
-  opdesc(MOVI,0,1, 0),
+  opdesc(CLRT,0,1,0,0),       
+  opdesc(CLRMAC,0,1,0,0),
+  opdesc(DIV0U,0,1,0,0),
+  opdesc(NOP,0,1,0,0),
+  opdesc(RTE,4,4,0,1),
+  opdesc(RTS,4,2,0,0),
+  opdesc(SETT,0,1,0,0),
+  opdesc(SLEEP,0,3,0,0),
+  opdesc(CMP_PL,0,1,0,0),
+  opdesc(CMP_PZ,0,1,0,0),
+  opdesc(DT,0,1,1,0),
+  opdesc(MOVT,0,1,0,0),
+  opdesc(ROTL,0,1,0,0),
+  opdesc(ROTR,0,1,0,0),
+  opdesc(ROTCL,0,1,0,0),
+  opdesc(ROTCR,0,1,0,0),
+  opdesc(SHL,0,1,0,0),
+  opdesc(SHAR,0,1,0,0),
+  opdesc(SHL,0,1,0,0),
+  opdesc(SHLR,0,1,0,0),
+  opdesc(SHLL2,0,1,0,0),
+  opdesc(SHLR2,0,1,0,0),
+  opdesc(SHLL8,0,1,0,0),
+  opdesc(SHLR8,0,1,0,0),
+  opdesc(SHLL16,0,1,0,0),
+  opdesc(SHLR16,0,1,0,0),
+  opdesc(STC_SR,0xFF,1,1,0),
+  opdesc(STC_GBR,0xFF,1,1,0),
+  opdesc(STC_VBR,0xFF,1,1,0),
+  opdesc(STS_MACH,0xFF,1,0,0),
+  opdesc(STS_MACL,0xFF,1,0,0),
+  opdesc(STS_PR,0xFF,1,0,0),
+  opdesc(TAS,0,4,1,0),         // 0x401b
+  opdesc(STC_SR_MEM,0xFF,2,1,0),
+  opdesc(STC_GBR_MEM,0xFF,2,1,0),
+  opdesc(STC_VBR_MEM,0xFF,2,1,0),
+  opdesc(STS_MACH_DEC,0xFF,2,1,0),
+  opdesc(STS_MACL_DEC,0xFF,2,1,0),
+  opdesc(STSMPR,0xFF,1,1,0),     // 0x4022
+  opdesc(LDC_SR,0xFF,1,0,1),
+  opdesc(LDCGBR,0xFF,1,0,0),
+  opdesc(LDC_VBR,0xFF,1,0,0),
+  opdesc(LDS_MACH,0xFF,1,0,0),
+  opdesc(LDS_MACL,0xFF,1,0,0),
+  opdesc(LDS_PR,0xFF,1,0,0),
+  opdesc(JMP, 3,2,0,0),
+  opdesc(JSR, 4,2,0,0),
+  opdesc(LDC_SR_INC,0xFF,3,0,1),  
+  opdesc(LDC_GBR_INC,0xFF,3,0,0),
+  opdesc(LDC_VBR_INC,0xFF,3,0,0),
+  opdesc(LDS_MACH_INC,0xFF,1,0,0),
+  opdesc(LDS_MACL_INC,0xFF,1,0,0),
+  opdesc(LDS_PR_INC,0xFF,1,0,0),
+  opdesc(BRAF,4,2,0,0),
+  opdesc(BSRF,4,2,0,0),
+  opdesc(ADD,0,1,1,0),
+  opdesc(ADDC,0,1,1,0),
+  opdesc(ADDV,0,1,0,0),  // 0x300F
+  opdesc(AND,0,1,0,0),
+  opdesc(CMP_EQ,0,1,0,0),
+  opdesc(CMP_HS,0,1,0,0),
+  opdesc(CMP_GE,0,1,0,0),
+  opdesc(CMP_HI,0,1,0,0),
+  opdesc(CMP_GT,0,1,0,0),
+  opdesc(CMPSTR,0,1,0,0), // 0x200C
+  opdesc(DIV1,0,1,0,0),   // 0x3004
+  opdesc(DIV0S,0,1,0,0),  // 0x2007
+  opdesc(DMULS,0,4,0,0),  // 0x300D
+  opdesc(DMULU,0,4,0,0),  // 0x3005
+  opdesc(EXTS_B,0,1,0,0),
+  opdesc(EXTS_W,0,1,0,0),
+  opdesc(EXTUB,0,1,0,0),
+  opdesc(EXTU_W,0,1,0,0),
+  opdesc(MOVR,0,1,0,0),  // 0x6003
+  opdesc(MULL,0,4,0,0),  // 0x0007
+  opdesc(MULS,0,3,0,0),  // 0x200f
+  opdesc(MULU,0,3,0,0),  // 0x200e
+  opdesc(NEG,0,1,0,0),
+  opdesc(NEGC,0,1,0,0),
+  opdesc(NOT,0,1,0,0),
+  opdesc(OR,0,1,0,0),
+  opdesc(SUB,0,1,0,0),
+  opdesc(SUBC,0,1,0,0),
+  opdesc(SUBV,0,1,0,0),  // 0x300B
+  opdesc(SWAP_B,0,1,0,0),
+  opdesc(SWAP_W,0,1,0,0),
+  opdesc(TST,0,1,0,0),
+  opdesc(XOR,0,1,0,0),
+  opdesc(XTRCT,0,1,0,0),
+  opdesc(MOVBS,0,1,1,0),
+  opdesc(MOVWS,0,1,1,0),
+  opdesc(MOVLS,0,1,1,0),
+  opdesc(MOVBL,0,1,0,0), // 6000
+  opdesc(MOVWL,0,1,0,0), // 6001
+  opdesc(MOVL_MEM_REG,0,1,0,0),
+  opdesc(MAC_L,0,3,0,0),  // 0x000f
+  opdesc(MAC_W,0,3,0,0),  // 0x400f
+  opdesc(MOVBP,0,1,0,0),  // 6004
+  opdesc(MOVWP,0,1,0,0),  // 6005
+  opdesc(MOVLP,0,1,1,0),  // 6006
+  opdesc(MOVBM,0,1,1,0),  // 0x2004,
+  opdesc(MOVWM,0,1, 0,0),  // 0x2005,
+  opdesc(MOVLM,0,1,1,0),  // 0x2006
+  opdesc(MOVBS0,0,1,1,0), // 0x0004
+  opdesc(MOVWS0,0,1,1,0), // 0x0005
+  opdesc(MOVLS0,0,1,1,0), // 0x0006
+  opdesc(MOVBL0,0,1, 0,0), // 0x000C
+  opdesc(MOVWL0,0,1, 0,0), // 0x000D 
+  opdesc(MOVLL0,0,1, 0,0), // 0x000E
+  opdesc(MOVBL4,0,1,1,0), // 0x8400
+  opdesc(MOVWL4,0,1, 0,0), // 0x8500
+  opdesc(MOVBS4,0,1, 0,0), // 0x8000
+  opdesc(MOVWS4,0,1,1,0), // 0x8100
+  opdesc(MOVLS4,0,1,1,0), // 0x1000
+  opdesc(MOVLL4,0,1, 0,0), // 0x5000 ,1
+  opdesc(MOVBSG,0,1,1,0), // 0xC000
+  opdesc(MOVWSG,0,1,1,0), // 0xc100
+  opdesc(MOVLSG,0,1,1,0), // 0xC200
+  opdesc(MOVBLG,0,1, 0,0), // 0xC400
+  opdesc(MOVWLG,0,1, 0,0), // 0xC500
+  opdesc(MOVLLG,0,1, 0,0), // 0xC600
+  opdesc(MOVA,0,1, 0,0),
+  opdesc(BF,1,3, 0,0),
+  opdesc(BF_S,3,2, 0,0),
+  opdesc(BT,1,3, 0,0),
+  opdesc(BT_S,3,2, 0,0),
+  opdesc(BRA,2,2, 0,0),
+  opdesc(BSR,2,2, 0,0),
+  opdesc(MOVWI,0,1, 0,0),
+  opdesc(MOVLI,0, 1, 0,0),
+  opdesc(AND_B,0,3,1,0),
+  opdesc(OR_B,0,3,1,0),
+  opdesc(TST_B,0, 1, 0,0),
+  opdesc(XOR_B,0,3,1,0),
+  opdesc(ANDI,0,1, 0,0),
+  opdesc(CMP_EQ_IMM,0,1, 0,0),
+  opdesc(ORI,0,1, 0,0),
+  opdesc(TSTI,0,1, 0,0),  // C800
+  opdesc(XORI,0,1, 0,0),
+  opdesc(TRAPA,5,8,1,0), // 0xc300
+  opdesc(ADDI,0,1, 0,0),
+  opdesc(MOVI,0,1, 0,0),
   opNULL
-}; 
+};
+
+static MemArea getMemArea(u32 addr) {
+/*
+00000000-000FFFFF : Boot ROM (512K, mirrored every 512K)
+ 00100000-0017FFFF : SMPC registers (128 bytes, mirrored every 128 bytes)
+ 00180000-001FFFFF : Backup RAM (64K, mirrored every 64K) [1]
+ 00200000-002FFFFF : Work RAM Low (1MB)
+ 00300000-003FFFFF : Random data on every read (mostly $00)
+ 00400000-007FFFFF : Always returns $0000.
+ 00800000-00FFFFFF : Always returns $00000001000200030004000500060007.
+ 01000000-01FFFFFF : Always returns $FFFF. [4]
+ 02000000-03FFFFFF : A-Bus CS0
+ 04000000-04FFFFFF : A-Bus CS1
+ 05000000-057FFFFF : A-Bus Dummy
+ 05800000-058FFFFF : A-Bus CS2 [2]
+ 05900000-059FFFFF : Lockup when read
+ 05A00000-05AFFFFF : 68000 Work RAM (512K) [9]
+ 05B00000-05BFFFFF : SCSP registers (4K, mirrored every 4K)
+ 05C00000-05C7FFFF : VDP1 VRAM (512K)
+ 05C80000-05CFFFFF : VDP1 Framebuffer (256K, mirrored every 256K) [7]
+ 05D00000-05D7FFFF : VDP1 Registers [6]
+ 05D80000-05DFFFFF : Lockup when read
+ 05E00000-05EFFFFF : VDP2 VRAM (512K, mirrored every 512K)
+ 05F00000-05F7FFFF : VDP2 CRAM (4K, mirrored every 4K) [8]
+ 05F80000-05FBFFFF : VDP2 registers (512 bytes, mirrored every 512 bytes)
+ 05FC0000-05FDFFFF : Always returns $000E0000
+ 05FE0000-05FEFFFF : SCU registers (256 bytes, mirrored every 256 bytes)
+ 05FF0000-05FFFFFF : Unknown registers (256 bytes, mirrored every 256 bytes) [3]
+ 06000000-07FFFFFF : Work RAM High (1MB, mirrored every 1MB)
+*/
+  u32 memArea = addr & 0x0FF00000;
+  if (memArea < 0x00100000)
+    return BIOS_MEM;
+  if ((memArea >= 0x00200000) && (memArea < 0x00300000))
+    return LO_MEM;
+  if ((memArea >= 0x06000000) && (memArea < 0x08000000))
+    return HI_MEM;
+  return UNDEF_MEM;
+}
 
 Block *CompileBlocks::Init(Block *dynaCode)
 {
@@ -706,20 +778,24 @@ Block * CompileBlocks::CompileBlock(u32 pc, addrs * ParentT = NULL)
   blockCount = LastMakeBlock;
   
   if (g_CompleBlock[blockCount].b_addr != 0x00) {
-    switch (g_CompleBlock[blockCount].b_addr & 0x0FF00000) {
-    case 0x00000000:
+
+    MemArea blockArea = getMemArea(g_CompleBlock[blockCount].b_addr);
+    switch (blockArea) {
+    case BIOS_MEM:
+#ifndef TEST_MODE
       if (yabsys.emulatebios) {
         return NULL;
       }
-      else {
-        LookupTableRom[ (g_CompleBlock[blockCount].b_addr&0x000FFFFF)>>1  ] = NULL;
+      else
+#endif 
+      {
+        LookupTableRom[ (g_CompleBlock[blockCount].b_addr&0x0007FFFF)>>1  ] = NULL;
       }
       break;
-    case 0x00200000:
+    case LO_MEM:
       LookupTableLow[ (g_CompleBlock[blockCount].b_addr&0x000FFFFF)>>1 ] = NULL;
       break;
-    case 0x06000000:
-      /*case 0x06100000:*/
+    case HI_MEM:
       LookupTable[ (g_CompleBlock[blockCount].b_addr & 0x000FFFFF)>>1 ] = NULL;
       break;
     default:
@@ -731,7 +807,7 @@ Block * CompileBlocks::CompileBlock(u32 pc, addrs * ParentT = NULL)
   }
 
   g_CompleBlock[blockCount].b_addr = pc;
-
+//printf("Emit 0x%x\n", pc);
   if (EmmitCode(&g_CompleBlock[blockCount], ParentT) != 0) {
     return NULL;
   }
@@ -764,11 +840,16 @@ void CompileBlocks::opcodePass(x86op_desc *op, u16 opcode, u8 *ptr)
 #if _WINDOWS
   if (*(op->off3) != 0xFF)
     *(u16*)(ptr + *(op->off3)) = (u16)(opcode & 0xfff);
-#else  
+#else
+#ifdef DYNAREC_X64
+  if (*(op->off3) != 0xFF)
+    *(u16*)(ptr + *(op->off3)) = (u16)(opcode & 0xfff);
+#else
   if (*(op->off3) != 0xFF) {
     *(ptr + *(op->off3)) = (u8)((opcode >> 8) & 0x0f);
     *(ptr + *(op->off3) + 4) = (u8)(opcode & 0xff);
   }
+#endif
 #endif  
 }
 
@@ -783,6 +864,7 @@ int CompileBlocks::EmmitCode(Block *page, addrs * ParentT )
   u32 instruction_counter = 0;
   u32 write_memory_counter = 0;
   u32 calsize;
+  int need_int = 0;
 
   startptr = ptr = page->code;
   i = 0;
@@ -856,6 +938,9 @@ int CompileBlocks::EmmitCode(Block *page, addrs * ParentT )
       u32 delayop = dsh2_instructions[op2];
       calsize = (ptr - startptr) + *asm_list[i].size + *asm_list[delayop].size + delay_seperator_size + SEPERATORSIZE_DELAY_AFTER + EPILOGSIZE;
     }
+    if (asm_list[i].checkint == 1) {
+      calsize += check_interrupt_size;
+    }
 
     if (calsize >= MAXBLOCKSIZE) {
       break; // no space is available
@@ -891,20 +976,38 @@ int CompileBlocks::EmmitCode(Block *page, addrs * ParentT )
     if (asm_list[i].delay == 0) { 
       memcpy((void*)ptr, (void*)(asm_list[i].func), *(asm_list[i].size));
       memcpy((void*)(ptr + *(asm_list[i].size)), (void*)nomal_seperator, nomal_seperator_size);
+#ifndef DYNAREC_X64
       instrSize[blockCount][count++] = *(asm_list[i].size) + nomal_seperator_size;
+#else
+      count+=1;
+#endif
       opcodePass(&asm_list[i], op, ptr);
       u8 * counterpos = ptr + *(asm_list[i].size) + nomal_seperator_counter_offset;
       *counterpos = asm_list[i].cycle;
       ptr += *(asm_list[i].size) + nomal_seperator_size;
+      
+      if ((asm_list[i].checkint == 1) || (need_int == 1)) {
+         memcpy((void*)ptr, (void*)check_interrupt, check_interrupt_size);
+         ptr += check_interrupt_size;
+         need_int = 0;
+      }
+
     }
 
     // No Intrupt Func ToDo: Never end block these functions
     else if (asm_list[i].delay == 0xFF ) { 
       memcpy((void*)ptr, (void*)(asm_list[i].func), *(asm_list[i].size));
       memcpy((void*)(ptr + *(asm_list[i].size)), (void*)nomal_seperator, nomal_seperator_size);
+#ifndef DYNAREC_X64
       instrSize[blockCount][count++] = *(asm_list[i].size) + nomal_seperator_size;
+#else
+      count+=1;
+#endif
       opcodePass(&asm_list[i], op, ptr);
       ptr += *(asm_list[i].size) + nomal_seperator_size;
+      if (asm_list[i].checkint == 1) {
+         need_int = 1;
+      }
     }
 
     // Normal Jump
@@ -912,7 +1015,11 @@ int CompileBlocks::EmmitCode(Block *page, addrs * ParentT )
       memcpy((void*)ptr, (void*)(asm_list[i].func), *(asm_list[i].size));
       memcpy((void*)(ptr + *(asm_list[i].size)), (void*)nomal_seperator, nomal_seperator_size);
       memcpy((void*)(ptr + *(asm_list[i].size)+ nomal_seperator_size), (void*)PageFlip, DELAYJUMPSIZE);
+#ifndef DYNAREC_X64
       instrSize[blockCount][count++] = *(asm_list[i].size) + nomal_seperator_size + DELAYJUMPSIZE;
+#else
+      count+=1;
+#endif
       opcodePass(&asm_list[i], op, ptr);
       u8 * counterpos = ptr + *(asm_list[i].size) + nomal_seperator_counter_offset;
       *counterpos = asm_list[i].cycle;
@@ -925,7 +1032,11 @@ int CompileBlocks::EmmitCode(Block *page, addrs * ParentT )
       u8 cycle = asm_list[i].cycle;
       memcpy((void*)ptr, (void*)(asm_list[i].func), *(asm_list[i].size));
       memcpy((void*)(ptr + *(asm_list[i].size)), (void*)delay_seperator, delay_seperator_size);
+#ifndef DYNAREC_X64
       instrSize[blockCount][count++] = *(asm_list[i].size) + delay_seperator_size;
+#else
+      count+=1;
+#endif
       opcodePass(&asm_list[i], op, ptr);
       ptr += *(asm_list[i].size) + delay_seperator_size;
 
@@ -955,7 +1066,11 @@ int CompileBlocks::EmmitCode(Block *page, addrs * ParentT )
       cycle += asm_list[j].cycle;
       memcpy((void*)ptr, (void*)(asm_list[j].func), *(asm_list[j].size));
       memcpy((void*)(ptr + *(asm_list[j].size)), (void*)seperator_delay_after, SEPERATORSIZE_DELAY_AFTER);
+#ifndef DYNAREC_X64
       instrSize[blockCount][count++] = *(asm_list[j].size) + SEPERATORSIZE_DELAY_AFTER;
+#else
+      count+=1;
+#endif
       opcodePass(&asm_list[j], temp, ptr);
       u8 * counterpos = ptr + *(asm_list[j].size) + delayslot_seperator_counter_offset;
       *counterpos = cycle;
@@ -995,13 +1110,16 @@ int CompileBlocks::EmmitCode(Block *page, addrs * ParentT )
       else if (jumppc < start_addr && write_memory_counter == 0 ) {
 
         Block * tmp = NULL; 
-        if ( (jumppc&0x0FF00000) == 0x06000000 && (start_addr & 0x0FF00000) == 0x06000000) {
+
+        MemArea areaJump = getMemArea(jumppc);
+        MemArea areaStart = getMemArea(start_addr);
+        if ( areaJump == HI_MEM && areaStart == HI_MEM) {
           tmp = LookupTable[(jumppc & 0x000FFFFF) >> 1];
-        }else if ((jumppc & 0x0FF00000) == 0x00200000 && (start_addr & 0x0FF00000) == 0x00200000) {
+        }else if (areaJump == LO_MEM && areaStart == LO_MEM) {
           tmp = LookupTableLow[(jumppc & 0x000FFFFF) >> 1];
         }
-        else if ((jumppc & 0x0FF00000) == 0x00000000 && (start_addr & 0x0FF00000) == 0x00000000) {
-          tmp = LookupTableRom[(jumppc & 0x000FFFFF) >> 1];
+        else if (areaJump == BIOS_MEM && areaStart == BIOS_MEM) {
+          tmp = LookupTableRom[(jumppc & 0x0007FFFF) >> 1];
         }
         if (tmp != NULL && (tmp->flags&BLOCK_WRITE) == 0 && (tmp->e_addr+2) == page->b_addr ) {
           page->flags |= BLOCK_LOOP;
@@ -1053,6 +1171,7 @@ DynarecSh2::DynarecSh2() {
   m_pDynaSh2->setmemword = (uintptr_t)memSetWord;
   m_pDynaSh2->setmemlong = (uintptr_t)memSetLong;
   m_pDynaSh2->eachclock = (uintptr_t)DebugEachClock;
+  m_pDynaSh2->checkint = (uintptr_t)CheckInterruptLoop;
   
   m_pCompiler = CompileBlocks::getInstance();
   m_ClockCounter = 0;
@@ -1072,17 +1191,23 @@ DynarecSh2::~DynarecSh2(){
   YabThreadFreeMutex(mtx_);
 }
 
+void CheckInterruptLoop() {
+  if ((DynarecSh2::CurrentContext->GET_SR() & 0xF0) < DynarecSh2::CurrentContext->GET_ICOUNT()) {
+    DynarecSh2::CurrentContext->CheckInterupt();
+  }
+}
+
 void DynarecSh2::ResetCPU(){
   memset((void*)m_pDynaSh2->GenReg, 0, sizeof(u32) * 16);
   memset((void*)m_pDynaSh2->CtrlReg, 0, sizeof(u32) * 3);
   memset((void*)m_pDynaSh2->SysReg, 0, sizeof(u32) * 6);
 
-  m_pDynaSh2->CtrlReg[0] = 0x000000;  // SR
-  m_pDynaSh2->CtrlReg[2] = 0x000000; // VBR
-  m_pDynaSh2->SysReg[3] = memGetLong(m_pDynaSh2->CtrlReg[2]);
-  m_pDynaSh2->GenReg[15] = memGetLong(m_pDynaSh2->CtrlReg[2] + 4);
-  m_pDynaSh2->SysReg[4] = 0;
-  m_pDynaSh2->SysReg[5] = 0;
+  SET_SR(0x000000);  // SR
+  SET_VBR(0x000000); // VBR
+  SET_PC(memGetLong(GET_VBR()));
+  m_pDynaSh2->GenReg[15] = memGetLong(GET_VBR() + 4); //Stack Pointer
+  SET_COUNT(0);
+  SET_ICOUNT(0);
   pre_cnt_ = 0;
   pre_exe_count_ = 0;
   interruput_chk_cnt_ = 0;
@@ -1108,10 +1233,7 @@ void DynarecSh2::ExecuteCount( u32 Count ) {
     m_pDynaSh2->SysReg[4] = 0;
   }
 
-
-  if ((GET_SR() & 0xF0) < GET_ICOUNT()) {
-    this->CheckInterupt();
-  }
+  CheckInterruptLoop();
 
   while (GET_COUNT() < targetcnt) {
     if (Execute() == IN_INFINITY_LOOP ) {
@@ -1162,22 +1284,32 @@ void DynarecSh2::Undecoded(){
   return;
 }
 
+void a(Block * block, tagSH2 *dyna) {
+  ((dynaFunc)((void*)(block->code)))(dyna);
+}
+
+void executeBlock(Block * block, tagSH2 *dyna) {
+  a(block, dyna);
+}
+
 int DynarecSh2::Execute(){
 
   Block * pBlock = NULL;
 
   m_pCompiler->exec_count_++;
 
-  switch( GET_PC() & 0x0FF00000 )
+  switch( getMemArea(GET_PC()) )
   {
     
   // ROM
-  case 0x00000000:
-    if (yabsys.emulatebios){
+  case BIOS_MEM:
+    if (yabsys.emulatebios) {
+#ifndef TEST_MODE
       BiosHandleFunc(ctx_);
-      return IN_INFINITY_LOOP;
+#endif
+      return 0;
     }
-    pBlock = m_pCompiler->LookupTableRom[(GET_PC() & 0x000FFFFF) >> 1];
+    pBlock = m_pCompiler->LookupTableRom[(GET_PC() & 0x0007FFFF) >> 1];
     if( pBlock == NULL )
     {
       pBlock = m_pCompiler->CompileBlock(GET_PC());
@@ -1185,12 +1317,12 @@ int DynarecSh2::Execute(){
         Undecoded();
         return IN_INFINITY_LOOP;
       }
-      m_pCompiler->LookupTableRom[(GET_PC() & 0x000FFFFF) >> 1] = pBlock;
+      m_pCompiler->LookupTableRom[(GET_PC() & 0x0007FFFF) >> 1] = pBlock;
     }
     break;
 
   // Low Memory
-  case 0x00200000:
+  case LO_MEM:
     pBlock = m_pCompiler->LookupTableLow[(GET_PC() & 0x000FFFFF) >> 1];
     if( pBlock == NULL )
     {
@@ -1204,8 +1336,7 @@ int DynarecSh2::Execute(){
     break;
 
   // High Memory
-  case 0x06000000:
-  /*case 0x06100000:*/
+  case HI_MEM:
 
     pBlock = m_pCompiler->LookupTable[ (GET_PC() & 0x000FFFFF)>>1 ];
     if( pBlock == NULL )
@@ -1273,7 +1404,7 @@ int DynarecSh2::Execute(){
     ((dynaFunc)((void*)(pBlock->code)))(m_pDynaSh2);
   }
 #else
-  ((dynaFunc)((void*)(pBlock->code)))(m_pDynaSh2);
+executeBlock(pBlock, m_pDynaSh2);
 #endif
 
   if (!m_pCompiler->debug_mode_ && (pBlock->flags&BLOCK_LOOP)) {
@@ -1305,15 +1436,12 @@ void DynarecSh2::AddInterrupt( u8 Vector, u8 level )
   YabThreadLock(mtx_);
   m_bIntruptSort = false;
   m_IntruptTbl.push_back(tmp);
-  m_IntruptTbl.unique(); 
-
-  //printf("AddInterrupt v:%d l:%d\n", Vector, level );
-
-
-
   if( m_IntruptTbl.size() > 1 ) {
     m_IntruptTbl.sort();
+    m_IntruptTbl.unique(); 
   }
+  //printf("AddInterrupt v:%d l:%d\n", Vector, level );
+
   m_bIntruptSort = true;
   m_pDynaSh2->SysReg[5] = m_IntruptTbl.begin()->level<<4;
   YabThreadUnLock(mtx_);
@@ -1327,8 +1455,6 @@ int DynarecSh2::CheckInterupt(){
   if( m_IntruptTbl.size() == 0 ) {
     return 0;
   }
-
-  //LOG("CheckInterupt %d\n", m_IntruptTbl.size() );
     
   YabThreadLock(mtx_);  
   dlstIntct::iterator pos = m_IntruptTbl.begin();
@@ -1357,17 +1483,18 @@ int DynarecSh2::InterruptRutine(u8 Vector, u8 level)
     memSetLong(m_pDynaSh2->GenReg[15], m_pDynaSh2->CtrlReg[0]);
     m_pDynaSh2->GenReg[15] -= 4;
     memSetLong(m_pDynaSh2->GenReg[15], m_pDynaSh2->SysReg[3]);
+    m_pDynaSh2->CtrlReg[0] &= ~(0x000000F0);
     m_pDynaSh2->CtrlReg[0] |= ((u32)(level << 4) & 0x000000F0);
     m_pDynaSh2->SysReg[3] = memGetLong(m_pDynaSh2->CtrlReg[2] + (((u32)Vector) << 2));
 #if defined(DEBUG_CPU)
-//    LOG("**** [%s] Exception vecnum=%u, PC=%08X to %08X, level=%08X\n", (is_slave_==false)?"M":"S", Vector, prepc, m_pDynaSh2->SysReg[3], level);
+    LOG("**** [%s] Exception vecnum=%u, PC=%08X to %08X, level=%08X (%08X)\n", (is_slave_==false)?"M":"S", Vector, prepc, m_pDynaSh2->SysReg[3], level, ((m_pDynaSh2->CtrlReg[0] >> 4) & 0x0F));
 #endif
     return 1;
   }
   return 0; 
 }
 
-
+#ifndef TEST_MODE
 int DynarecSh2GetDisasmebleString(string & out, u32 from, u32 to) {
   char linebuf[128];
   if (from > to) return -1;
@@ -1378,6 +1505,7 @@ int DynarecSh2GetDisasmebleString(string & out, u32 from, u32 to) {
   }
   return 0;
 }
+#endif
 
 int DynarecSh2::Resume() {
   statics_trigger_ = NORMAL;
@@ -1411,10 +1539,7 @@ void DynarecSh2::ShowStatics(){
 }
 
 int DynarecSh2::GetCurrentStatics(MapCompileStatics & buf){
-#if !defined(DEBUG_CPU)
-//  buf = "Not Debug Mode\n";
-#else
-
+#if defined(DEBUG_CPU)
   if (statics_trigger_ != NORMAL && statics_trigger_ != FINISHED) return -1;
 
   statics_trigger_ = REQUESTED;

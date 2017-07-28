@@ -291,6 +291,65 @@ void YabThreadFreeMutex( YabMutex * mtx ){
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+
+typedef struct YabBarrier_win32
+{
+  SYNCHRONIZATION_BARRIER barrier;
+} YabBarrier_win32;
+
+void YabThreadBarrierWait(YabBarrier *bar){
+    if (bar == NULL) return;
+    YabBarrier_win32 * pctx;
+    pctx = (YabBarrier_win32 *)bar;
+    EnterSynchronizationBarrier(&pctx->barrier, 0);
+}
+
+YabBarrier * YabThreadCreateBarrier(int nbWorkers){
+    YabBarrier_win32 * mtx = (YabBarrier_win32 *)malloc(sizeof(YabBarrier_win32));
+    InitializeSynchronizationBarrier( &mtx->barrier, nbWorkers, -1 );
+    return (YabBarrier *)mtx;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+typedef struct YabCond_win32
+{
+	CONDITION_VARIABLE cond;
+} YabCond_win32;
+
+
+void YabThreadCondWait(YabCond *ctx, YabMutex * mtx) {
+    YabCond_win32 * pctx;
+    YabMutex_win32 * pmtx;
+    if (mtx==NULL) return;
+    pctx = (YabCond_win32 *)ctx;
+    pmtx = (YabMutex_win32 *)mtx;
+    YabThreadLock(mtx);
+    SleepConditionVariableCS (&pctx->cond, &pmtx->mutex, INFINITE);
+    YabThreadUnLock(mtx);
+}
+
+void YabThreadCondSignal(YabCond *mtx) {
+    YabCond_win32 * pmtx;
+    if (mtx==NULL) return;
+    pmtx = (YabCond_win32 *)mtx;
+    WakeConditionVariable (&pmtx->cond);
+}
+
+YabCond * YabThreadCreateCond(){
+
+	YabCond_win32 * mtx = (YabCond_win32 *)malloc(sizeof(YabCond_win32));
+	InitializeConditionVariable(&mtx->cond);
+	return (YabCond *)mtx;
+}
+
+void YabThreadFreeCond( YabCond *mtx ) {
+	if (mtx != NULL){
+		free(mtx);
+	}
+}
+
 void YabThreadSetCurrentThreadAffinityMask(int mask)
 {
 	SetThreadIdealProcessor(GetCurrentThread(), mask);

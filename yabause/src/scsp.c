@@ -362,6 +362,11 @@ struct AlfoTables
    u8 noise_table[256];
 };
 
+
+#if defined(ASYNC_SCSP)
+//global variables
+static YabBarrier *AVBarrier;
+#endif
 struct AlfoTables alfo;
 
 void scsp_main_interrupt (u32 id);
@@ -4710,6 +4715,11 @@ u32 pre_cpu_clock = 0;
 u32 pre_68k_clcok = 0;
 int sh2_read_req = 0;
 void SyncSh2And68k(){
+
+#if defined(ASYNC_SCSP)
+  return;
+#endif
+
   if (IsM68KRunning) {
     sh2_read_req++;
     YabThreadYield();
@@ -4772,33 +4782,6 @@ SoundRamReadLong (u32 addr)
   SyncSh2And68k();
 
   val = T2ReadLong(SoundRam, addr);
-#if 1 // This is the workround
-  if (addr == 0x500) {
-
-    if (val == 0xFFFFFFFF ) {
-      char * code = Cs2GetCurrentGmaecode();
-      if (strcmp(code, "T-1229G") == 0 || strcmp(code, "T-1228G") == 0 ) {
-        u64 before = YabauseGetTicks() * 1000000 / yabsys.tickfreq;
-        while (val == 0xFFFFFFFF) {
-          YabThreadUSleep(16666);
-          SyncSh2And68k();
-          val = T2ReadLong(SoundRam, addr);
-          LOG("read Addr val=%04X, %08X(%d)\n", val, YabauseGetFrameCount(), yabsys.LineCount);
-        }
-        while (val == 0x0) {
-          YabThreadUSleep(16666);
-          SyncSh2And68k();
-          val = T2ReadLong(SoundRam, addr);
-          LOG("read Addr val=%04X, %08X(%d)\n", val, YabauseGetFrameCount(), yabsys.LineCount);
-        }
-
-        u32 checktime = YabauseGetTicks() * 1000000 / yabsys.tickfreq;
-        LOG("Sync wait time =%d\n", (s32)(checktime - before));
-      }
-    }
-
-  }
-#endif
 
   return val;
 
@@ -4945,6 +4928,7 @@ ScspDeInit (void)
   scsp_mute_flags = 0;
   thread_running = 0; 
 #if defined(ASYNC_SCSP)
+  AVBarrier = NULL;
   YabThreadWait(YAB_THREAD_SCSP);
 #endif
 
@@ -5233,6 +5217,7 @@ void new_scsp_update_samples(s32 *bufL, s32 *bufR, int scspsoundlen)
 
 //////////////////////////////////////////////////////////////////////////////
 #if !defined(ASYNC_SCSP)
+void SyncScsp() {}
 void ScspExec(){
   u32 audiosize;
 
@@ -5244,6 +5229,21 @@ void ScspExec(){
   ScspInternalVars->scsptiming1++;
 #else
 
+void SyncScsp() {
+    if ((thread_running == 1) && (yabsys.LineCount == yabsys.MaxLineCount)) {
+        if (isAutoFrameSkip() == 0) YabThreadBarrierWait(AVBarrier);
+    }
+}
+
+void SyncScspDynarec() {
+    if ((thread_running == 1) && (yabsys.LineCount == (yabsys.MaxLineCount-1))) {
+        if (isAutoFrameSkip() == 0) YabThreadBarrierWait(AVBarrier);
+    }
+}
+ 
+void syncWithSH2() {
+    if (isAutoFrameSkip() == 0) YabThreadBarrierWait(AVBarrier);
+}
 
 void ScspAsynMain( void * p ){
 
@@ -5251,8 +5251,8 @@ void ScspAsynMain( void * p ){
   u64 now;
   u32 difftime;
   const int samplecnt = 256; // 11289600/44100
-  const int step = 16;
-  const int frame_div = 4;
+  const int step = 256;
+  const int frame_div = 1;
   const int framecnt = 188160 / frame_div; // 11289600/60
   int frame = 0;
   int frame_count = 0;
@@ -5305,8 +5305,8 @@ void ScspAsynMain( void * p ){
         else{
           difftime = now + (ULLONG_MAX - before);
         }
-        sleeptime = ((16666 / frame_div) - difftime);
-        if (sleeptime > 10000) YabThreadUSleep(0);
+        sleeptime = (16666 - difftime);
+        if ((sleeptime > 0) && (isAutoFrameSkip()==0))   YabThreadUSleep(sleeptime);
 
         if(sh2_read_req != 0) {
           for (i = 0; i < samplecnt; i += step) {
@@ -5322,14 +5322,12 @@ void ScspAsynMain( void * p ){
           }
           sh2_read_req = 0;
         }
-
-      } while (sleeptime > 0);
-
+      } while ((sleeptime > 0) && (isAutoFrameSkip()==0));
       checktime = YabauseGetTicks() * 1000000 / yabsys.tickfreq;
       //yprintf("vsynctime = %d(%d)\n", (s32)(checktime - before), (s32)(operation_time - before));
       before = checktime;
+      syncWithSH2();
     }
-    
   }
   YabThreadWake(YAB_THREAD_SCSP);
 }
@@ -5338,6 +5336,7 @@ void ScspExec(){
 
 	if (thread_running == 0){
 		thread_running = 1;
+                AVBarrier = YabThreadCreateBarrier(2);
 		YabThreadStart(YAB_THREAD_SCSP, ScspAsynMain, NULL);
     YabThreadUSleep(100000);
 	}
