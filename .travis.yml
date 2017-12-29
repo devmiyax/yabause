@@ -22,11 +22,14 @@ addons:
     - libcurl4-openssl-dev
 
 matrix:
-  include
+  include:
   - os: linux
-    env: MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
-  - os: linux    
-    env: MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+    env: 
+      - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+      
+  - os: linux
+    env:
+      - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
 
   
 before_install:
