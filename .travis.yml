@@ -1,28 +1,15 @@
 language: cpp
- 
-#we are going to use containers
 sudo: false
-
 cache:
   apt: true
-  ccache: true
-  directories:
-    - $HOME/.ccache
-
 env:
   global:
-    - USE_CCACHE=1
-    - CCACHE_COMPRESS=1
-    - CCACHE_MAXSIZE=200M
-    - CCACHE_CPP2=1
-    
+    - GLOBAL=1
 
 matrix:
   include:
     - os: linux
-      dist: trusty
-      compiler: gcc
-      addons: &gcc5-trusty
+      addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
@@ -34,11 +21,11 @@ matrix:
             - libsdl2-dev
             - libcurl4-openssl-dev
     
-      env: COMPILER='ccache g++-5'
-      
+      env:
+       - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        
     - os: linux
-      compiler: clang
-      addons: &clang36-trusty
+      addons:
         apt:
           sources: ['llvm-toolchain-trusty-3.6', 'ubuntu-toolchain-r-test']
           packages:
@@ -47,11 +34,36 @@ matrix:
             - libgles2-mesa-dev  
             - libsdl2-dev
             - libcurl4-openssl-dev
-      env: COMPILER='ccache clang++-3.6'
+      env: 
+        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang-3.6"
 
+    - android:
+        components:
+          - tools
+          - platform-tools
+          - build-tools-23.0.2
+          - android-23
+          - extra-google-m2repository
+          - extra-android-m2repository
+        before_install:
+          - rm -fr $HOME/android-ndk-r16b
+          - curl -L http://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip -O
+          - unzip -oq android-ndk-r16b-linux-x86_64.zip
+          - rm android-ndk-r16b-linux-x86_64.zip
+          - export ANDROID_NDK_HOME=$HOME/android-ndk-r16b
+          - cd yabause
+          - mkdir build
+          - cd build          
+        script:
+          - cmake -DCMAKE_TOOLCHAIN_FILE=../src/android/androidtoolchain.cmake -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_NATIVE_API_LEVEL=19 -DYAB_PORTS=android -DYAB_WANT_ARM7=TRUE -DYAB_WANT_C68K=FALSE -DYAB_WANT_DYNAREC_DEVMIYAX=TRUE
+          - cmake --build .
+          - cd ../src/android
+          - ./gradlew assembleDebug
+
+          
 addons:
   before_install:
-  #- eval "${MATRIX_EVAL}"
+  - eval "${MATRIX_EVAL}"
   - cd yabause
   - mkdir build
   - cd build
