@@ -110,6 +110,9 @@ language: cpp
 sudo: false
 
 before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libsdl2-dev
+  
   # only build the first port if running a coverity scan. otherwise coverity will attempt to analyze all the builds
   - if ([[ "${TRAVIS_JOB_NUMBER##*.}" != "1" ]] && [[ "${TRAVIS_BRANCH}" == "coverity_scan" ]]); then false ; fi
   - cd yabause
