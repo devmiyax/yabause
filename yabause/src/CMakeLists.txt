@@ -816,6 +816,10 @@ endif ()
 
 set(YAB_OPTIMIZATION "-O3" CACHE STRING "Override optimization level")
 
+if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+endif()
+
 if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i686")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${YAB_OPTIMIZATION} -march=i686 -msse")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
