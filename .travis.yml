@@ -1,8 +1,9 @@
 language: cpp
-
+  
 matrix:
   include:
-  - os: linux
+    - os: linux
+      compiler: gcc
       addons:
         apt:
           sources:
@@ -10,19 +11,20 @@ matrix:
           packages:
             - gcc-5
             - g++-5
-    env: 
-      - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+      env: 
+         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
       
-  - os: linux
-     addons:
+    - os: linux
+      compiler: clang
+      addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
-          packages:
+           packages:
             - clang-3.6  
-    env:
-      - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+       env:
+          - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
 
 addons:
   apt:
