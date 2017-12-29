@@ -4,7 +4,10 @@ matrix:
     # linux gcc
     - compiler: gcc
       env: testenv="linux gcc"
-      
+      script:
+        - sudo unlink /usr/bin/gcc && sudo ln -s /usr/bin/gcc-5 /usr/bin/gcc
+        - gcc --version
+  
     # linux clang
     - compiler: clang
       env: testenv="linux clang"
@@ -107,8 +110,17 @@ env:
 
 language: cpp
 
-sudo: false
+sudo: required
 
+  
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-5
+    - g++-5
+    
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libegl1-mesa-dev
