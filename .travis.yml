@@ -40,7 +40,7 @@ matrix:
 
     - language: android
       env:
-        - NDROID_NDK=$HOME/android-ndk-r16b
+        - ANDROID_NDK=$HOME/android-ndk-r16b
       android:
         components:
           - tools
