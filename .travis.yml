@@ -25,7 +25,6 @@ matrix:
        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
         
     - os: linux
-      compiler: clang
       addons:
         apt:
           sources: 
