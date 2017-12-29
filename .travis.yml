@@ -25,6 +25,7 @@ matrix:
        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
         
     - os: linux
+      compiler: clang
       addons:
         apt:
           sources: ['llvm-toolchain-trusty-3.6', 'ubuntu-toolchain-r-test']
@@ -56,7 +57,7 @@ matrix:
         - mkdir build
         - cd build          
       script:
-        - cmake ../ -DCMAKE_TOOLCHAIN_FILE=../src/android/androidtoolchain.cmake -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_NATIVE_API_LEVEL=19 -DYAB_PORTS=android -DYAB_WANT_ARM7=TRUE -DYAB_WANT_C68K=FALSE -DYAB_WANT_DYNAREC_DEVMIYAX=TRUE
+        - cmake ../ -DCMAKE_TOOLCHAIN_FILE=../src/android/android.toolchain.cmake -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_NATIVE_API_LEVEL=19 -DYAB_PORTS=android -DYAB_WANT_ARM7=TRUE -DYAB_WANT_C68K=FALSE -DYAB_WANT_DYNAREC_DEVMIYAX=TRUE
         - cmake --build .
         - cd ../src/android
         - ./gradlew assembleDebug
