@@ -102,7 +102,8 @@ script:
   - mkdir build
   - cd build
   - export GIT_HASH=$(git rev-parse --short HEAD)
-  - cmake -DYAB_PORTS=glfw .. && cmake --build .
+  - cmake -DYAB_PORTS=glfw ..
+  - make VERBOSE=1
 
 notifications:
   email: false
