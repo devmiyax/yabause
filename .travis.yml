@@ -34,11 +34,8 @@ matrix:
       compiler: clang
       addons:
         apt:
-          sources:
-            - llvm-toolchain-precise-3.6          
-            - ubuntu-toolchain-r-test
-           packages:
-            - clang-3.6  
+          sources: ['llvm-toolchain-trusty-3.6', 'ubuntu-toolchain-r-test']
+          packages: ['clang-3.6'] 
        env:
           - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
 
