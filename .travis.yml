@@ -2,15 +2,28 @@ matrix:
   include:
 
     # linux gcc
-    - compiler: gcc
-      env: testenv="linux gcc"
-      script:
-        - sudo unlink /usr/bin/gcc && sudo ln -s /usr/bin/gcc-5 /usr/bin/gcc
-        - gcc --version
+   - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        
   
     # linux clang
-    - compiler: clang
-      env: testenv="linux clang"
+  - os: linux
+        addons:
+          apt:
+            sources:
+              - ubuntu-toolchain-r-test
+              - llvm-toolchain-precise-3.6
+            packages:
+              - clang-3.6
+        env:
+          - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
 
     # os x cocoa port
     - language: objective-c
@@ -113,13 +126,7 @@ language: cpp
 sudo: required
 
   
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-5
-    - g++-5
+
     
 before_install:
   - sudo apt-get -qq update
@@ -127,6 +134,8 @@ before_install:
   - sudo apt-get install -y libgles2-mesa-dev  
   - sudo apt-get install -y libsdl2-dev
   - sudo apt-get install -y libcurl4-openssl-dev
+  
+  - eval "${MATRIX_EVAL}"
   
   # only build the first port if running a coverity scan. otherwise coverity will attempt to analyze all the builds
   - if ([[ "${TRAVIS_JOB_NUMBER##*.}" != "1" ]] && [[ "${TRAVIS_BRANCH}" == "coverity_scan" ]]); then false ; fi
