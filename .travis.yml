@@ -113,7 +113,6 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libegl1-mesa-dev
   - sudo apt-get install -y libgles2-mesa-dev
-  - sudo apt-get install -y libglfw3-dev
   - sudo apt-get install -y libsdl2-dev
   
   # only build the first port if running a coverity scan. otherwise coverity will attempt to analyze all the builds
