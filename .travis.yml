@@ -1,39 +1,39 @@
 language: cpp
 
-os:
-  - linux
-
-compiler:
-  - clang
-  - gcc
+matrix:
+  include:
+  - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-5
+            - g++-5
+    env: 
+      - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+      
+  - os: linux
+     addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6  
+    env:
+      - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
 
 addons:
   apt:
-    sources:
-    - llvm-toolchain-precise-3.6
-    - ubuntu-toolchain-r-test
     packages:
-    - clang-3.6
-    - gcc-5
-    - g++-5
     - libegl1-mesa-dev
     - libgles2-mesa-dev  
     - libsdl2-dev
     - libcurl4-openssl-dev
 
-matrix:
-  include:
-  - os: linux
-    env: 
-      - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
-      
-  - os: linux
-    env:
-      - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
-
   
 before_install:
-  # Prepare compiler
   - eval "${MATRIX_EVAL}"
   - cd yabause
   - mkdir build
