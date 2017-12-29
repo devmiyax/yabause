@@ -4,6 +4,7 @@ language: cpp
 sudo: false
 
 cache:
+  apt: true
   ccache: true
   directories:
     - $HOME/.ccache
