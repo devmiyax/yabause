@@ -39,6 +39,8 @@ matrix:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang-5.0"
 
     - language: android
+      env:
+        - NDROID_NDK=$HOME/android-ndk-r16b
       android:
         components:
           - tools
@@ -53,7 +55,6 @@ matrix:
         - unzip -oq android-ndk-r16b-linux-x86_64.zip
         - rm android-ndk-r16b-linux-x86_64.zip
       script:
-        - export ANDROID_NDK=$HOME/android-ndk-r16b
         - cd ${TRAVIS_BUILD_DIR}/yabause
         - mkdir build
         - cd build      
