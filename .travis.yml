@@ -111,6 +111,8 @@ sudo: false
 
 before_install:
   - sudo apt-get -qq update
+  - sudo apt-get install -y libegl1-mesa-dev
+  - sudo apt-get install -y libgles2-mesa-dev  
   - sudo apt-get install -y libsdl2-dev
   - sudo apt-get install -y libcurl4-openssl-dev
   
