@@ -27,8 +27,7 @@ matrix:
           packages:
             - gcc-5
             - g++-5
-      env: 
-         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+      env: MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
       
     - os: linux
       compiler: clang
@@ -36,9 +35,7 @@ matrix:
         apt:
           sources: ['llvm-toolchain-trusty-3.6', 'ubuntu-toolchain-r-test']
           packages: ['clang-3.6'] 
-       env:
-          - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
-
+      env: MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
 addons:
   apt:
     packages:
