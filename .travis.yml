@@ -53,10 +53,10 @@ matrix:
         - unzip -oq android-ndk-r16b-linux-x86_64.zip
         - rm android-ndk-r16b-linux-x86_64.zip
         - export ANDROID_NDK=$HOME/android-ndk-r16b
-        - cd yabause
-        - mkdir build
-        - cd build          
       script:
+        - cd ${TRAVIS_BUILD_DIR}/yabause
+        - mkdir build
+        - cd build      
         - cmake ../ -DCMAKE_TOOLCHAIN_FILE=../src/android/android.toolchain.cmake -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_NATIVE_API_LEVEL=19 -DYAB_PORTS=android -DYAB_WANT_ARM7=TRUE -DYAB_WANT_C68K=FALSE -DYAB_WANT_DYNAREC_DEVMIYAX=TRUE
         - cmake --build .
         - cd ../src/android
@@ -70,7 +70,7 @@ before_install:
 install:
   # Set the ${CXX} variable properly
   #- export CXX=${COMPILER}
-  - ${CXX} --version
+  # - ${CXX} --version
 
   # Dependencies required by the CI are installed in ${TRAVIS_BUILD_DIR}/deps/
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
