@@ -61,7 +61,7 @@ matrix:
         - mkdir build
         - cd build      
         - cmake ../ -DCMAKE_TOOLCHAIN_FILE=../src/android/android.toolchain.cmake -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_NATIVE_API_LEVEL=19 -DYAB_PORTS=android -DYAB_WANT_ARM7=TRUE -DYAB_WANT_C68K=FALSE -DYAB_WANT_DYNAREC_DEVMIYAX=TRUE
-        - cmake --build .
+        - make VERBOSE=1
         - cd ../src/android
         - chmod 755 ./gradlew
         - ./gradlew assembleDebug
