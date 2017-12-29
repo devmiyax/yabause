@@ -28,15 +28,15 @@ matrix:
       compiler: clang
       addons:
         apt:
-          sources: ['llvm-toolchain-trusty-5.0', 'ubuntu-toolchain-r-test']
+          sources: ['llvm-toolchain-trusty-3.8', 'ubuntu-toolchain-r-test']
           packages:
-            - clang-5.0
+            - clang-3.8
             - libegl1-mesa-dev
             - libgles2-mesa-dev  
             - libsdl2-dev
             - libcurl4-openssl-dev
       env: 
-        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang-5.0"
+        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang-3.8"
 
     - language: android
       env:
