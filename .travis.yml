@@ -37,7 +37,8 @@ matrix:
       env: 
         - MATRIX_EVAL="CC=clang-3.6 && CXX=clang-3.6"
 
-    - android:
+    - language: android
+      android:
         components:
           - tools
           - platform-tools
@@ -45,20 +46,20 @@ matrix:
           - android-23
           - extra-google-m2repository
           - extra-android-m2repository
-        before_install:
-          - rm -fr $HOME/android-ndk-r16b
-          - curl -L http://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip -O
-          - unzip -oq android-ndk-r16b-linux-x86_64.zip
-          - rm android-ndk-r16b-linux-x86_64.zip
-          - export ANDROID_NDK_HOME=$HOME/android-ndk-r16b
-          - cd yabause
-          - mkdir build
-          - cd build          
-        script:
-          - cmake -DCMAKE_TOOLCHAIN_FILE=../src/android/androidtoolchain.cmake -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_NATIVE_API_LEVEL=19 -DYAB_PORTS=android -DYAB_WANT_ARM7=TRUE -DYAB_WANT_C68K=FALSE -DYAB_WANT_DYNAREC_DEVMIYAX=TRUE
-          - cmake --build .
-          - cd ../src/android
-          - ./gradlew assembleDebug
+      before_install:
+        - rm -fr $HOME/android-ndk-r16b
+        - curl -L http://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip -O
+        - unzip -oq android-ndk-r16b-linux-x86_64.zip
+        - rm android-ndk-r16b-linux-x86_64.zip
+        - export ANDROID_NDK_HOME=$HOME/android-ndk-r16b
+        - cd yabause
+        - mkdir build
+        - cd build          
+      script:
+        - cmake -DCMAKE_TOOLCHAIN_FILE=../src/android/androidtoolchain.cmake -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_NATIVE_API_LEVEL=19 -DYAB_PORTS=android -DYAB_WANT_ARM7=TRUE -DYAB_WANT_C68K=FALSE -DYAB_WANT_DYNAREC_DEVMIYAX=TRUE
+        - cmake --build .
+        - cd ../src/android
+        - ./gradlew assembleDebug
           
 before_install:
   - eval "${MATRIX_EVAL}"
