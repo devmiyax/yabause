@@ -1,5 +1,21 @@
 language: cpp
-  
+ 
+#we are going to use containers
+sudo: false
+
+cache:
+  ccache: true
+  directories:
+    - $HOME/.ccache
+
+env:
+  global:
+    - USE_CCACHE=1
+    - CCACHE_COMPRESS=1
+    - CCACHE_MAXSIZE=200M
+    - CCACHE_CPP2=1
+    
+
 matrix:
   include:
     - os: linux
@@ -19,8 +35,8 @@ matrix:
       addons:
         apt:
           sources:
+            - llvm-toolchain-precise-3.6          
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
            packages:
             - clang-3.6  
        env:
@@ -48,8 +64,4 @@ script:
 notifications:
   email: false
 
-sudo: false
-
-cache:
-  - apt
   
