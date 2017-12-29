@@ -47,13 +47,6 @@ matrix:
             - libsdl2-dev
             - libcurl4-openssl-dev
       env: MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
-    - language: android
-        android:
-        components:
-          - build-tools-26.0.2
-          - android-26
-          - extra
-
     
 addons:
   before_install:
