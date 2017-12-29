@@ -2,7 +2,6 @@
 #include <fstream>
 #include <sstream>
 #include <time.h>
-#include <direct.h>  
 #include <stdlib.h>  
 #include <stdio.h>  
 #define CURL_STATICLIB
@@ -12,6 +11,14 @@
 #include "test_framework.h"
 #include "webinterface/src/picojson.h"
 #include "memory.h"
+
+#ifdef _WINDOWS
+#include <direct.h>
+#else
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 
 using namespace std;
@@ -27,13 +34,13 @@ int TestFramework::load( const string & title, const string & path){
   title_ = title;
   git_hash_ = GIT_SHA1;
 
-  //Œ»İ“ú‚ğæ“¾‚·‚é
+  //ï¿½ï¿½ï¿½İ“ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
   time_t t = time(nullptr);
 
-  //Œ`®‚ğ•ÏŠ·‚·‚é    
+  //ï¿½`ï¿½ï¿½ï¿½ï¿½ÏŠï¿½ï¿½ï¿½ï¿½ï¿½    
   const tm* lt = localtime(&t);
 
-  //s‚É“Æ©ƒtƒH[ƒ}ƒbƒg‚É‚È‚é‚æ‚¤‚É˜AŒ‹‚µ‚Ä‚¢‚­
+  //sï¿½É“Æï¿½ï¿½tï¿½Hï¿½[ï¿½}ï¿½bï¿½gï¿½É‚È‚ï¿½æ‚¤ï¿½É˜Aï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
   std::stringstream s;
   s << "20";
   s << lt->tm_year - 100;
@@ -59,7 +66,7 @@ int TestFramework::load( const string & title, const string & path){
   base_dir_ = s.str();
 
 
-  // ƒtƒ@ƒCƒ‹ƒI[ƒvƒ“
+  // ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Iï¿½[ï¿½vï¿½ï¿½
   ifstream inputStream;
   string thisLine;
   inputStream.open(path.c_str());
@@ -146,7 +153,11 @@ int TestFramework::load( const string & title, const string & path){
   current_test_ = 0;
   current_point_ = 0;
   frame_count_ = 0;
+#if defined(_WINDOWS)
   _mkdir(base_dir_.c_str());
+#else
+  mkdir(base_dir_.c_str(),0700);
+#endif
 
   if (MappedMemoryLoadExec(test_items_[0].program_path_.c_str(), test_items_[0].start_address_) != 0) {
     cout << "Fail to start test" << endl;
