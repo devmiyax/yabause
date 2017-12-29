@@ -59,10 +59,8 @@ matrix:
           - cmake --build .
           - cd ../src/android
           - ./gradlew assembleDebug
-
           
-addons:
-  before_install:
+before_install:
   - eval "${MATRIX_EVAL}"
   - cd yabause
   - mkdir build
