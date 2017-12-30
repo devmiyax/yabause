@@ -1,7 +1,7 @@
 environment:
   MINGW: C:\Qt\Tools\mingw492_32
   DXSDK_DIR: "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)"
-  CMAKE_BUILD_TYPE: Release
+  CMAKE_BUILD_TYPE: Debug
   # set to d if debug build
   qt_dll_suffix: ""
 
