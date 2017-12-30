@@ -1,5 +1,6 @@
 environment:
   MINGW: C:\Qt\Tools\mingw492_32
+  DXSDK_DIR: "C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\"
   CMAKE_BUILD_TYPE: Release
   # set to d if debug build
   qt_dll_suffix: ""
@@ -17,7 +18,7 @@ environment:
         -DDirectX_GUID_LIBRARY=%DXSDK_DIR%/Lib/x86/dxguid.lib
         -DDirectX_INPUT8_LIBRARY=%DXSDK_DIR%/Lib/x86/dinput8.lib
         -DDirectX_SOUND_LIBRARY=%DXSDK_DIR%/Lib/x86/dsound.lib
-        -DDirectX_XINPUT_LIBRARY=%DXSDK_DIR%//Lib/x86/XInput.lib
+        -DDirectX_XINPUT_LIBRARY=%DXSDK_DIR%/Lib/x86/XInput.lib
         -DSH2_DYNAREC=FALSE
 
 shallow_clone: true
@@ -31,7 +32,7 @@ init:
   - set Path=%MINGW%\bin;%Path%
 
 before_build:
-  - dir %DXSDK_DIR%
+  - dir %DXSDK_DIR%/Lib/x86/
   # fetch appropriate sdl lib for visual studio or mingw
   - cd c:\
   - appveyor DownloadFile https://www.libsdl.org/release/%sdl_filename%
