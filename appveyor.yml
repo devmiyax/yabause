@@ -58,8 +58,9 @@ after_build:
   - ps: $git_hash_date += "-"
   - ps: $git_hash_date += ${env:APPVEYOR_REPO_COMMIT_TIMESTAMP}.substring(0,10)
   - ps: ${env:yab_name} = "yabause-${git_hash_date}-${env:compiler_type}"
-  - cmd: cpack -G ZIP -D CPACK_PACKAGE_FILE_NAME=%yab_name%
-  - appveyor PushArtifact %yab_name%.zip
+  - appveyor PushArtifact "C:/projects/yabause/yabause/build/src/qt/Debug/yabause.exe"
+  #- cmd: cpack -G ZIP -D CPACK_PACKAGE_FILE_NAME=%yab_name%
+  #- appveyor PushArtifact %yab_name%.zip
 
   # Upload build to yabause.org
   #- ps: ${env:yab_name_alt} = "yabause-latest-win64"
