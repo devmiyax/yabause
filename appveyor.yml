@@ -7,7 +7,7 @@ environment:
   matrix:
     # Visual Studio build
     - generator: "Visual Studio 12 2013"
-      CMAKE_PREFIX_PATH: C:\Qt\5.4\msvc2013_32_opengl
+      CMAKE_PREFIX_PATH: C:\Qt\5.4\msvc2013_opengl
       compiler_type: "vs12-x32"
       sdl_filename: SDL2-devel-2.0.3-VC.zip
       sdl_arch: x86
