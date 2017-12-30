@@ -11,9 +11,14 @@ environment:
       compiler_type: "vs12-x32"
       sdl_filename: SDL2-devel-2.0.3-VC.zip
       sdl_arch: x86
-      cmake_args: "-DYAB_WANT_DIRECTSOUND=ON -DYAB_WANT_DIRECTINPUT=ON -DYAB_NETWORK=ON -DYAB_WANT_GDBSTUB=ON -DYAB_WANT_DYNAREC_DEVMIYAX=ON"
-
-
+      cmake_args: >
+        -DYAB_WANT_DYNAREC_DEVMIYAX=TRUE -DYAB_WANT_DIRECTINPUT=TRUE -DYAB_WANT_DIRECTSOUND=TRUE -DYAB_WANT_SDL=TRUE
+        -DDirectX_ERR_LIBRARY="C:/Program Files (x86)/Microsoft DirectX SDK/Lib/x86/DxErr.lib"
+        -DDirectX_GUID_LIBRARY="C:/Program Files (x86)/Microsoft DirectX SDK/Lib/x86/dxguid.lib"
+        -DDirectX_INPUT8_LIBRARY="C:/Program Files (x86)/Microsoft DirectX SDK/Lib/x86/dinput8.lib"
+        -DDirectX_SOUND_LIBRARY="C:/Program Files (x86)/Microsoft DirectX SDK/Lib/x86/dsound.lib"
+        -DDirectX_XINPUT_LIBRARY="C:/Program Files (x86)/Microsoft DirectX SDK/Lib/x86/XInput.lib"
+        -DSH2_DYNAREC=FALSE
 
 shallow_clone: true
 
