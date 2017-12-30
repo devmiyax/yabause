@@ -1,7 +1,7 @@
 environment:
   MINGW: C:\Qt\Tools\mingw492_32
   DXSDK_DIR: "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)"
-  CMAKE_BUILD_TYPE: Debug
+  CMAKE_BUILD_TYPE: Release
   # set to d if debug build
   qt_dll_suffix: ""
 
@@ -47,7 +47,7 @@ before_build:
   - cmake -G "%generator%" %cmake_args% -DSDL2MAIN_LIBRARY=C:/SDL2-2.0.3/lib/%sdl_arch%/SDL2main.lib -DSDL2_INCLUDE_DIR=C:/SDL2-2.0.3/include/ -DSDL2_LIBRARY=C:/SDL2-2.0.3/lib/%sdl_arch%/SDL2.lib ..
 
 build_script:
-  - msbuild yabause.sln /p:configuration=Debug /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - msbuild yabause.sln /p:configuration=Release /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 # make a distributable package of the build output
 after_build:
@@ -58,9 +58,10 @@ after_build:
   - ps: $git_hash_date += "-"
   - ps: $git_hash_date += ${env:APPVEYOR_REPO_COMMIT_TIMESTAMP}.substring(0,10)
   - ps: ${env:yab_name} = "yabause-${git_hash_date}-${env:compiler_type}"
-  - appveyor PushArtifact "C:/projects/yabause/yabause/build/src/qt/Debug/yabause.exe"
-  #- cmd: cpack -G ZIP -D CPACK_PACKAGE_FILE_NAME=%yab_name%
-  #- appveyor PushArtifact %yab_name%.zip
+  - cmd: cpack -G ZIP -D CPACK_PACKAGE_FILE_NAME=%yab_name%
+  - appveyor PushArtifact %yab_name%.zip
+
+  #- appveyor PushArtifact "C:/projects/yabause/yabause/build/src/qt/Debug/yabause.exe"
 
   # Upload build to yabause.org
   #- ps: ${env:yab_name_alt} = "yabause-latest-win64"
