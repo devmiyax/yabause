@@ -1289,11 +1289,18 @@ int YglInit(int width, int height, unsigned int depth) {
 
   glGetError();
 
+#ifdef __LIBRETRO__
+  _Ygl->default_fbo = YuiGetFB();
+#else
   _Ygl->default_fbo = 0;
+#endif
   _Ygl->drawframe = 0;
   _Ygl->readframe = 1;
 
+#if !defined(__LIBRETRO__)
+  // This line is causing a black screen on the libretro port
   glGetIntegerv(GL_FRAMEBUFFER_BINDING,&_Ygl->default_fbo);
+#endif
   printf("GL_FRAMEBUFFER_BINDING = %d",_Ygl->default_fbo );
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

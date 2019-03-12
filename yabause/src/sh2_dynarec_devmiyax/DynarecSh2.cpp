@@ -49,7 +49,7 @@ DynarecSh2 * DynarecSh2::CurrentContext = NULL;
 
 #if 1 //defiend(__aarch64__)
 
-#if defined(ANDROID)
+#if defined(ANDROID) || defined(__LIBRETRO__)
 void cacheflush(uintptr_t begin, uintptr_t end, int flag ){
   __builtin___clear_cache((void*)begin,(void*)end);
 }
