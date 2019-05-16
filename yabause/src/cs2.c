@@ -357,8 +357,8 @@ u32 FASTCALL Cs2ReadLong(u32 addr) {
                      // Make sure we still have sectors to transfer
                      if (Cs2Area->datanumsecttrans < Cs2Area->datasectstotrans)
                      {
-						 const u8 *ptr = &Cs2Area->datatranspartition->block[Cs2Area->datatranssectpos + Cs2Area->datanumsecttrans]->data[Cs2Area->datatransoffset];
-						 if (Cs2Area->datatranspartition->block[Cs2Area->datatranssectpos + Cs2Area->datanumsecttrans] == NULL)
+                        const u8 *ptr = &Cs2Area->datatranspartition->block[Cs2Area->datatranssectpos + Cs2Area->datanumsecttrans]->data[Cs2Area->datatransoffset];
+                        if (Cs2Area->datatranspartition->block[Cs2Area->datatranssectpos + Cs2Area->datanumsecttrans] == NULL)
                         {
                            CDLOG("cs2\t: datatranspartition->block[Cs2Area->datanumsecttrans] was NULL");
                            return 0;
@@ -366,8 +366,9 @@ u32 FASTCALL Cs2ReadLong(u32 addr) {
 #ifdef WORDS_BIGENDIAN
                         val = *((const u32 *) ptr);
 #else
-                        val = BSWAP32(*((const u32 *) ptr));
+                        val = BSWAP32(*((const u32 *) ptr)); 
 #endif
+                        //LOG("[CS2] get addr = %d,val = %08X", Cs2Area->datatransoffset, val);
 
                         // increment datatransoffset/cdwnum
                         Cs2Area->cdwnum += 4;
@@ -429,23 +430,30 @@ void FASTCALL Cs2WriteLong(UNUSED u32 addr, UNUSED u32 val) {
          if (Cs2Area->datatranstype == CDB_DATATRANSTYPE_PUTSECTOR)
          {
             // put sector
+           //LOG("[CS2] put addr=%d, val=%08X", Cs2Area->datatransoffset, val );
 
             // Make sure we still have sectors to transfer
             if (Cs2Area->datanumsecttrans < Cs2Area->datasectstotrans)
             {
-               // Transfer Data
-               const u8 *ptr = &Cs2Area->datatranspartition->block[Cs2Area->datanumsecttrans]->data[Cs2Area->datatransoffset];
+              int size = (Cs2Area->putsectsize - Cs2Area->getsectsize) / 24;
 
-               if (Cs2Area->datatranspartition->block[Cs2Area->datanumsecttrans] == NULL)
-               {
+              int offset = Cs2Area->datatransoffset - size;
+
+              if (offset >= 0) {
+                // Transfer Data
+                const u8 *ptr = &Cs2Area->datatranspartition->block[Cs2Area->datanumsecttrans]->data[offset];
+
+                if (Cs2Area->datatranspartition->block[Cs2Area->datanumsecttrans] == NULL)
+                {
                   CDLOG("cs2\t: datatranspartition->block[Cs2Area->datanumsecttrans] was NULL");
                   return;
-               }
+                }
 #ifdef WORDS_BIGENDIAN
-               *((u32 *) ptr) = val;
+                *((u32 *)ptr) = val;
 #else
-               *((u32 *) ptr) = BSWAP32(val);
+                *((u32 *)ptr) = BSWAP32(val);
 #endif
+              }
 
                // increment datatransoffset/cdwnum
                Cs2Area->cdwnum += 4;
@@ -456,8 +464,8 @@ void FASTCALL Cs2WriteLong(UNUSED u32 addr, UNUSED u32 val) {
                {
                   Cs2Area->datatransoffset = 0;
                   Cs2Area->datanumsecttrans++;
-						if (Cs2Area->datanumsecttrans >= Cs2Area->datasectstotrans)
-              Cs2SetIRQ(CDB_HIRQ_EHST);
+                  if (Cs2Area->datanumsecttrans >= Cs2Area->datasectstotrans)
+                      Cs2SetIRQ(CDB_HIRQ_EHST);
                }
             }
          }
@@ -809,7 +817,7 @@ void Cs2Reset(void) {
      Cs2Area->filter[i].fid = 0;
      Cs2Area->filter[i].smval = 0;
      Cs2Area->filter[i].cival = 0;
-     Cs2Area->filter[i].condtrue = 0;
+     Cs2Area->filter[i].condtrue = i;
      Cs2Area->filter[i].condfalse = 0xFF;
   }
 
@@ -972,7 +980,10 @@ void Cs2Exec(u32 timing) {
                   if (playpartition != NULL)
                   {
                      // We can use this sector
-                     CDLOG("partition number = %d blocks = %d blockfreespace = %d fad = %x playpartition->size = %x isbufferfull = %x\n", (playpartition - Cs2Area->partition), playpartition->numblocks, Cs2Area->blockfreespace, Cs2Area->FAD, playpartition->size, Cs2Area->isbufferfull);
+                     CDLOG("partition number = %d blocks = %d blockfreespace = %d fad = %x playpartition->size = %x isbufferfull = %x\n", 
+                       (playpartition - Cs2Area->partition), 
+                       playpartition->numblocks, 
+                       Cs2Area->blockfreespace, Cs2Area->FAD, playpartition->size, Cs2Area->isbufferfull);
 
                      Cs2SetIRQ(CDB_HIRQ_CSCT);
                      Cs2Area->isonesectorstored = 1;
@@ -1132,9 +1143,9 @@ void Cs2Execute(void) {
 
   switch (instruction) {
     case 0x00:
-      CDLOG("cs2\t: Command: getStatus\n");
+      //CDLOG("cs2\t: Command: getStatus\n");
       Cs2GetStatus();
-      CDLOG("cs2\t: ret: %04x %04x %04x %04x %04x\n", Cs2Area->reg.HIRQ, Cs2Area->reg.CR1, Cs2Area->reg.CR2, Cs2Area->reg.CR3, Cs2Area->reg.CR4);
+      //CDLOG("cs2\t: ret: %04x %04x %04x %04x %04x\n", Cs2Area->reg.HIRQ, Cs2Area->reg.CR1, Cs2Area->reg.CR2, Cs2Area->reg.CR3, Cs2Area->reg.CR4);
       break;
     case 0x01:
       CDLOG("cs2\t: Command: getHardwareInfo\n");
@@ -1506,7 +1517,66 @@ void Cs2InitializeCDSystem(void) {
 
   if (initflag & 0x1)
   {
-     // Reset CD block software
+    int i, i2;
+    Cs2Area->playFAD = 0xFFFFFFFF;
+    Cs2Area->playendFAD = 0xFFFFFFFF;
+    Cs2Area->playtype = 0;
+    Cs2Area->maxrepeat = 0;
+
+    // set authentication variables to 0(not authenticated)
+    Cs2Area->satauth = 0;
+    Cs2Area->mpgauth = 0;
+
+    // clear filter conditions
+    for (i = 0; i < MAX_SELECTORS; i++)
+    {
+      Cs2Area->filter[i].FAD = 0;
+      Cs2Area->filter[i].range = 0xFFFFFFFF;
+      Cs2Area->filter[i].mode = 0;
+      Cs2Area->filter[i].chan = 0;
+      Cs2Area->filter[i].smmask = 0;
+      Cs2Area->filter[i].cimask = 0;
+      Cs2Area->filter[i].fid = 0;
+      Cs2Area->filter[i].smval = 0;
+      Cs2Area->filter[i].cival = 0;
+      Cs2Area->filter[i].condtrue = i;
+      Cs2Area->filter[i].condfalse = 0xFF;
+    }
+
+    // clear partitions
+    for (i = 0; i < MAX_SELECTORS; i++)
+    {
+      Cs2Area->partition[i].size = -1;
+      Cs2Area->partition[i].numblocks = 0;
+
+      for (i2 = 0; i2 < MAX_BLOCKS; i2++)
+      {
+        Cs2Area->partition[i].block[i2] = NULL;
+        Cs2Area->partition[i].blocknum[i2] = 0xFF;
+      }
+    }
+
+    // clear blocks
+    for (i = 0; i < MAX_BLOCKS; i++)
+    {
+      Cs2Area->block[i].size = -1;
+      memset(Cs2Area->block[i].data, 0, 2352);
+    }
+
+    Cs2Area->blockfreespace = MAX_BLOCKS;
+
+    // initialize TOC
+    memset(Cs2Area->TOC, 0xFF, sizeof(Cs2Area->TOC));
+
+    // clear filesystem stuff
+    Cs2Area->curdirsect = 0;
+    Cs2Area->curdirsize = 0;
+    Cs2Area->curdirfidoffset = 0;
+    memset(&Cs2Area->fileinfo, 0, sizeof(Cs2Area->fileinfo));
+    Cs2Area->numfiles = 0;
+
+    Cs2Area->lastbuffer = 0xFF;
+
   }
 
   if (initflag & 0x2)
@@ -1603,7 +1673,7 @@ void Cs2EndDataTransfer(void) {
         Cs2Area->datatranspartition->size -= Cs2Area->cdwnum;
         Cs2Area->datatranspartition->numblocks -= Cs2Area->datasectstotrans;
 
-        if (Cs2Area->blockfreespace == 200) Cs2Area->isonesectorstored = 0;
+        if (Cs2Area->blockfreespace == MAX_BLOCKS) Cs2Area->isonesectorstored = 0;
 
         Cs2SetIRQ(CDB_HIRQ_EHST);
         break;
@@ -1627,6 +1697,8 @@ void Cs2PlayDisc(void) {
   pdspos = ((Cs2Area->reg.CR1 & 0xFF) << 16) | Cs2Area->reg.CR2;
   pdepos = ((Cs2Area->reg.CR3 & 0xFF) << 16) | Cs2Area->reg.CR4;
   pdpmode = Cs2Area->reg.CR3 >> 8;
+
+  //CDLOG("[CDB] Command: Play; Start = 0x%06x, End = 0x%06x, Mode = 0x%02x", pdspos, pdepos, pdpmode);
 
   // Convert Start Position to playFAD
   if (pdspos == 0xFFFFFF || pdpmode == 0xFF) // This still isn't right
@@ -1701,7 +1773,13 @@ void Cs2PlayDisc(void) {
   Cs2SetTiming(1);
 
   Cs2Area->_periodiccycles = 0;
-  Cs2Area->_periodictiming = SEEK_TIME; // seektime
+  // Calculate Seek time
+  int length = abs((int)Cs2Area->playendFAD - (int)Cs2Area->FAD);
+  CDLOG("cs2\t:Seek length = %d", length);
+  Cs2Area->_periodictiming = length * 2000; // seektime
+  if (Cs2Area->_periodictiming > SEEK_TIME) {
+    Cs2Area->_periodictiming = SEEK_TIME;
+  }
 
   Cs2Area->status = CDB_STAT_SEEK;      // need to be seek
   Cs2Area->options = 0;
@@ -2062,7 +2140,7 @@ void Cs2ResetSelector(void) {
      }
 
      if (Cs2Area->blockfreespace > 0) Cs2Area->isbufferfull = 0;
-     if (Cs2Area->blockfreespace == 200) 
+     if (Cs2Area->blockfreespace == MAX_BLOCKS)
      {
         Cs2Area->isonesectorstored = 0;
         Cs2Area->datatranstype = CDB_DATATRANSTYPE_INVALID;
@@ -2312,7 +2390,7 @@ static INLINE void CalcSectorOffsetNumber(u32 bufno, u32 *sectoffset, u32 *sectn
    if (*sectoffset == 0xFFFF)
    {
       // Last sector 
-      CDLOG("FIXME - Sector offset of 0xFFFF not supported\n");
+      *sectoffset = Cs2Area->partition[bufno].numblocks - 1;
    }
    else if (*sectnum == 0xFFFF)
    {
@@ -2332,6 +2410,8 @@ void Cs2GetSectorData(void)
    gsdsectoffset = Cs2Area->reg.CR2;
    gsdbufno = Cs2Area->reg.CR3 >> 8;
    gsdsectnum = Cs2Area->reg.CR4;
+
+   //LOG("[CS2] COMMAND_GET_SECDATA, pnum=%d, offs = %d, numsec = %d", gsdbufno, gsdsectoffset, gsdsectnum);
 
    if (gsdbufno >= MAX_SELECTORS)
    {
@@ -2409,7 +2489,7 @@ void Cs2DeleteSectorData(void)
 
    Cs2Area->partition[dsdbufno].numblocks -= (u8)dsdsectnum;
 
-   if (Cs2Area->blockfreespace == 200)
+   if (Cs2Area->blockfreespace == MAX_BLOCKS)
       Cs2Area->isonesectorstored = 0;
 
    doCDReport(Cs2Area->status);
@@ -2483,7 +2563,7 @@ void Cs2PutSectorData(void) {
          u32 i;
 
          putpartition->size = 0;
-
+         int startpos = putpartition->numblocks;
          for (i = 0; i < psdsectnum; i++)
          {
             putpartition->block[putpartition->numblocks] = Cs2AllocateBlock(&putpartition->blocknum[putpartition->numblocks], Cs2Area->putsectsize);
@@ -2498,9 +2578,9 @@ void Cs2PutSectorData(void) {
          Cs2Area->datatranspartition = Cs2Area->partition + psdbufno;
          Cs2Area->datatranspartitionnum = (u8)psdbufno;
          Cs2Area->datatransoffset = 0;
-         Cs2Area->datanumsecttrans = 0;
+         Cs2Area->datanumsecttrans = startpos; // startpos;
          Cs2Area->datatranssectpos = 0;
-         Cs2Area->datasectstotrans = (u16)psdsectnum;
+         Cs2Area->datasectstotrans = startpos+(u16)psdsectnum;
          Cs2SetIRQ(CDB_HIRQ_CMOK | CDB_HIRQ_DRDY);
       }
    }
@@ -2514,17 +2594,81 @@ void Cs2PutSectorData(void) {
 //////////////////////////////////////////////////////////////////////////////
 
 void Cs2CopySectorData(void) {
-   // finish me
-   doCDReport(Cs2Area->status);
-   Cs2SetIRQ(CDB_HIRQ_CMOK | CDB_HIRQ_ECPY);
+  u32 source = Cs2Area->reg.CR3 >> 8;
+  u32 offset = Cs2Area->reg.CR2;
+  u32 dest = Cs2Area->reg.CR1 & 0xFF;
+  u32 count = Cs2Area->reg.CR4 & 0xFF;
+
+  if (source >= 0x18 || dest >= 0x18) {
+    Cs2Area->status = CDB_STAT_ERROR; // ToDo: check
+    doCDReport(Cs2Area->status);
+    Cs2SetIRQ(CDB_HIRQ_CMOK);
+    return;
+  }
+
+  partition_struct *putpartition = &Cs2Area->partition[dest];
+  partition_struct *srcpartition = &Cs2Area->partition[source];
+  if (offset == 0xFFFF) {
+    offset = srcpartition->numblocks - 1;
+  }
+
+  if (count == 0xFFFF) {
+    count = srcpartition->numblocks - offset;
+  }
+
+  for (int i = 0; i < count; i++) {
+    putpartition->block[putpartition->numblocks] = Cs2AllocateBlock(&putpartition->blocknum[putpartition->numblocks],2352);
+    u8 *dest_ptr =  putpartition->block[putpartition->numblocks]->data;
+    u8 *src_ptr = srcpartition->block[offset+i]->data;
+    memcpy(dest_ptr, src_ptr, sizeof(u8) * 2352);
+    putpartition->numblocks++;
+    putpartition->size += 2352;
+  }
+
+  
+  doCDReport(Cs2Area->status);
+  Cs2SetIRQ(CDB_HIRQ_CMOK | CDB_HIRQ_ECPY);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 void Cs2MoveSectorData(void) {
-   // finish me
-   doCDReport(Cs2Area->status);
-   Cs2SetIRQ(CDB_HIRQ_CMOK | CDB_HIRQ_ECPY);
+
+  u32 source = Cs2Area->reg.CR3 >> 8;
+  u32 offset = Cs2Area->reg.CR2;
+  u32 dest = Cs2Area->reg.CR1 & 0xFF;
+  u32 count = Cs2Area->reg.CR4 & 0xFF;
+
+  if (source >= 0x18 || dest >= 0x18) {
+    Cs2Area->status = CDB_STAT_ERROR; // ToDo: check
+    doCDReport(Cs2Area->status);
+    Cs2SetIRQ(CDB_HIRQ_CMOK);
+    return;
+  }
+
+  partition_struct *putpartition = &Cs2Area->partition[dest];
+  partition_struct *srcpartition = &Cs2Area->partition[source];
+  if (offset == 0xFFFF) {
+    offset = srcpartition->numblocks - 1;
+  }
+
+  if (count == 0xFFFF) {
+    count = srcpartition->numblocks - offset;
+  }
+
+  for (int i = 0; i < count; i++) {
+    putpartition->block[putpartition->numblocks] = srcpartition->block[offset + i];
+    srcpartition->numblocks--;
+    srcpartition->size -= 2352;
+    srcpartition->block[offset + i] = NULL;
+    putpartition->numblocks++;
+    putpartition->size += 2352;
+  }
+
+  Cs2SortBlocks(&Cs2Area->partition[source]);
+  doCDReport(Cs2Area->status);
+  Cs2SetIRQ(CDB_HIRQ_CMOK | CDB_HIRQ_ECPY);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -3125,7 +3269,7 @@ void Cs2SetupDefaultPlayStats(u8 track_number, int writeFAD) {
 block_struct * Cs2AllocateBlock(u8 * blocknum, s32 sectsize) {
   u32 i;
   // find a free block
-  for(i = 0; i < 200; i++)
+  for(i = 0; i < MAX_BLOCKS; i++)
   {
      if (Cs2Area->block[i].size == -1)
      {

@@ -23,9 +23,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include <list>
 #include <map>
 #include <string>
+#include <unordered_map>
 
 #include <sys/types.h>
 #include <stdint.h>
+
+#include "debug.h"
 #include "threads.h"
 
 //****************************************************
@@ -56,8 +59,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 //#define ALLOCATE(x) mmap ((void*)0x6000000, x, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS ,-1, 0);
 #define FREEMEM(x,a) munmap(x,a);
 #else
-#define ALLOCATE(x)	malloc(x)
-#define FREEMEM(x,a)	if(x){ free(x); x = NULL;}
+#include <sys/mman.h>
+#define ALLOCATE(x) mmap (NULL, x, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS | MAP_FILE|MAP_PRIVATE ,-1, 0);
+#define FREEMEM(x,a) munmap(x,a);
+//#define ALLOCATE(x)	malloc(x)
+//#define FREEMEM(x,a)	if(x){ free(x); x = NULL;}
 #endif
 
 const int MAX_INSTSIZE = 0xFFFF+1;
@@ -81,7 +87,8 @@ typedef map<u32, CompileStaticsNode> MapCompileStatics;
 //****************************************************
 
 const int NUMOFBLOCKS = 1024*4;
-const int MAXBLOCKSIZE = 3072-(4*4);
+//const int MAXBLOCKSIZE = 3072-(4*4);
+const int MAXBLOCKSIZE = 4096;
 #define MAINMEMORY_SIZE (0x100000);
 #define ROM_SIZE (0x80000);
 
@@ -90,7 +97,7 @@ struct Block
   u8  code[MAXBLOCKSIZE];
   u32 b_addr; //beginning PC
   u32 e_addr; //ending PC
-  u32 pad;
+  u32 id;
   u32 flags;
 };
 
@@ -112,6 +119,7 @@ struct tagSH2
   uintptr_t setmemword;
   uintptr_t setmemlong;
   uintptr_t eachclock;
+  u32 exitcount;
 };
 
 // Instruction
@@ -191,13 +199,17 @@ private:
 #else
     LookupParentTable = NULL;
 #endif
+    compile_count_ = 0;
+    exec_count_ = 0;
+    remove_count_ = 0;
   }
   ~CompileBlocks(){
     FREEMEM(dCode, sizeof(Block)*NUMOFBLOCKS);
   }
   static CompileBlocks * instance_;
-
+  bool show_code_ = false;
 public:
+  void setShowCode( bool b ){ show_code_ = b; }
   static CompileBlocks * getInstance(){
     if( instance_ == NULL ){
       instance_ = new CompileBlocks();
@@ -219,17 +231,21 @@ public:
   Block* LookupTableC[0x8000>>1];
   Block * dCode;
   
+  std::unordered_map<u32, int> self_modify_block;
+
   inline void setDirty(u32 addr) {
     addr = adress_mask(addr);
     if (LookupParentTable[addr].size() == 0) return;
     for (auto it = LookupParentTable[addr].begin(); it != LookupParentTable[addr].end(); it++) {
       if (LookupTable[*it] != NULL) {
-        for (u32 i = adress_mask(LookupTable[*it]->b_addr) ;
-             i <= adress_mask(LookupTable[*it]->e_addr); i++ ) {
+        for (u32 i = adress_mask(LookupTable[*it]->b_addr) ; i <= adress_mask(LookupTable[*it]->e_addr); i++ ) {
           if (i != addr) {
             LookupParentTable[i].remove(*it);
           }
         }
+         LOG("%d %08X is removed", LookupTable[*it]->id, (*it) << 1);
+        remove_count_++;
+        self_modify_block[ (((*it) << 1) | 0x06000000) ] = LookupTable[*it]->id;
         LookupTable[*it] = NULL;
       }
     }
@@ -245,11 +261,13 @@ public:
   void FindOpCode(u16 opcode, u8 * instindex);
   void BuildInstructionList();
 
+  int findFreeBlock(u32 pc);
   int EmmitCode(Block *page, addrs * ParentT = NULL);
 
   // statics
-  u32 compile_count_;
+  u32 compile_count_ ;
   u32 exec_count_;
+  u32 remove_count_;
 
 
   void ShowStatics();
@@ -267,7 +285,7 @@ protected:
   int       m_ClockCounter;
   bool      m_bIntruptSort;
   bool one_step_;
-  s32 pre_exe_count_;
+  u32 pre_exe_count_;
   bool is_slave_ = false;
   u32 pre_PC_;
   SH2_struct * ctx_;
@@ -290,7 +308,6 @@ protected:
   MapCompileStatics compie_statics_;
   string message_buf;
 
-
 public:
   DynarecSh2();
   ~DynarecSh2();
@@ -301,6 +318,7 @@ public:
   bool IsSlave() { return is_slave_;  }
 
   dlstIntct m_IntruptTbl;
+  void RemoveInterrupt(u8 Vector, u8 level);
   void AddInterrupt( u8 Vector, u8 level );
   int CheckInterupt();
   int InterruptRutine(u8 Vector, u8 level);
@@ -311,9 +329,21 @@ public:
   int Execute();
   void Undecoded();
 
+  void AddCycle(u32 cycle) {
+    addcycle_ += cycle;
+  }
+
+  u32 addcycle_ = 0;
+
   void ShowStatics();
   void ShowCompileInfo();
   void ResetCompileInfo();
+
+  void onFrame(){
+    m_pCompiler->self_modify_block.clear();
+  }
+
+  tagSH2 * getDynaSh(){ return m_pDynaSh2; }; 
 
   inline u32 * GetGenRegPtr() { return m_pDynaSh2->GenReg; }
   inline u32 GET_MACH() { return m_pDynaSh2->SysReg[0]; }
@@ -337,7 +367,6 @@ public:
 
   int GetCurrentStatics(MapCompileStatics & buf);
   int Resume();
-
 };
 
 

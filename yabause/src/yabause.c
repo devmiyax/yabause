@@ -48,7 +48,7 @@
 #include "vdp2.h"
 #include "yui.h"
 #include "bios.h"
-#include "movie.h"
+//#include "movie.h"
 #include "osdcore.h"
 #ifdef HAVE_LIBSDL
 #if defined(__APPLE__) || defined(GEKKO)
@@ -109,7 +109,8 @@ char ssf_track_name[256] = { 0 };
 char ssf_artist[256] = { 0 };
 
 u32 saved_scsp_cycles = 0;//fixed point
-u32 saved_m68k_cycles = 0;//fixed point
+volatile u64 saved_m68k_cycles = 0;//fixed point
+static u32 g_scsp_main_mode = 1;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -155,9 +156,18 @@ void YabauseChangeTiming(int freqtype) {
 
 //////////////////////////////////////////////////////////////////////////////
 extern int tweak_backup_file_size;
+YabEventQueue * q_scsp_frame_start;
+YabEventQueue * q_scsp_finish;
+
 
 int YabauseInit(yabauseinit_struct *init)
 {
+  q_scsp_frame_start = YabThreadCreateQueue(1);
+  q_scsp_finish = YabThreadCreateQueue(1);
+  setM68kCounter(0);
+
+   yabsys.sync_shift = init->sync_shift;
+
    // Need to set this first, so init routines see it
    yabsys.UseThreads = init->usethreads;
    yabsys.NumThreads = init->numthreads;
@@ -238,7 +248,7 @@ int YabauseInit(yabauseinit_struct *init)
    VideoSetSetting(VDP_SETTING_FILTERMODE,init->video_filter_type);
    VideoSetSetting(VDP_SETTING_POLYGON_MODE, init->polygon_generation_mode);
    VideoSetSetting(VDP_SETTING_RESOLUTION_MODE, init->resolution_mode);
-
+   VideoSetSetting(VDP_SETTING_ROTATE_SCREEN, init->rotate_screen);
 
 
    // Initialize input core
@@ -266,7 +276,8 @@ int YabauseInit(yabauseinit_struct *init)
       return -1;
    }
 
-   if (ScspInit(init->sndcoretype) != 0)
+   g_scsp_main_mode = init->scsp_main_mode;
+   if (ScspInit(init->sndcoretype, init->scsp_sync_count_per_frame, init->scsp_main_mode ) != 0)
    {
       YabSetError(YAB_ERR_CANNOTINIT, _("SCSP/M68K"));
       return -1;
@@ -522,15 +533,14 @@ void YabauseResetButton(void) {
 //////////////////////////////////////////////////////////////////////////////
 
 int YabauseExec(void) {
-
 	//automatically advance lag frames, this should be optional later
-	if (FrameAdvanceVariable > 0 && LagFrameFlag == 1){ 
-		FrameAdvanceVariable = NeedAdvance; //advance a frame
+	//if (FrameAdvanceVariable > 0 && LagFrameFlag == 1){ 
+		//FrameAdvanceVariable = NeedAdvance; //advance a frame
 		YabauseEmulate();
-		FrameAdvanceVariable = Paused; //pause next time
+		//FrameAdvanceVariable = Paused; //pause next time
 		return(0);
-	}
-
+	//}
+/*
 	if (FrameAdvanceVariable == Paused){
 		ScspMuteAudio(SCSP_MUTE_SYSTEM);
 		return(0);
@@ -546,6 +556,7 @@ int YabauseExec(void) {
 		ScspUnMuteAudio(SCSP_MUTE_SYSTEM);	
 		YabauseEmulate();
 	}
+*/
 	return 0;
 }
 
@@ -583,6 +594,10 @@ u32 YabauseGetFrameCount() {
 }
 
 //#define YAB_STATICS
+void SyncCPUtoSCSP();
+u64 getM68KCounter();
+u64 g_m68K_dec_cycle = 0;
+
 
 int YabauseEmulate(void) {
    int oneframeexec = 0;
@@ -592,12 +607,14 @@ int YabauseEmulate(void) {
       yabsys.DecilineMode ? yabsys.DecilineStop : yabsys.DecilineStop * 10;
    const u32 usecinc =
       yabsys.DecilineMode ? yabsys.DecilineUsec : yabsys.DecilineUsec * 10;
-#ifndef USE_SCSP2
+
    unsigned int m68kcycles;       // Integral M68k cycles per call
    unsigned int m68kcenticycles;  // 1/100 M68k cycles per call
 
    u32 m68k_cycles_per_deciline = 0;
    u32 scsp_cycles_per_deciline = 0;
+
+   const u32 sync_shift = yabsys.sync_shift;
 
    if(use_new_scsp)
    {
@@ -633,7 +650,6 @@ int YabauseEmulate(void) {
          m68kcenticycles = yabsys.DecilineMode ? 62 : 20;
       }
    }
-#endif
 
    DoMovie();
 
@@ -648,138 +664,80 @@ int YabauseEmulate(void) {
    #endif
 
    MSH2->cycles = 0;
+   MSH2->depth = 0;
    SSH2->cycles = 0;
+   SSH2->depth = 0;
+   SH2OnFrame(MSH2);
+   SH2OnFrame(SSH2);
    u64 cpu_emutime = 0;
    while (!oneframeexec)
    {
       PROFILE_START("Total Emulation");
 
-      if (yabsys.DecilineMode) {
-
-         // Since we run the SCU with half the number of cycles we send
-         // to SH2Exec(), we always compute an even number of cycles here
-         // and leave any odd remainder in SH2CycleFrac.
-         u32 sh2cycles;
-         yabsys.SH2CycleFrac += cyclesinc;
-         sh2cycles = (yabsys.SH2CycleFrac >> (YABSYS_TIMING_BITS + 1)) << 1;
-         yabsys.SH2CycleFrac &= ((YABSYS_TIMING_MASK << 1) | 1);
+      // Since we run the SCU with half the number of cycles we send
+      // to SH2Exec(), we always compute an even number of cycles here
+      // and leave any odd remainder in SH2CycleFrac.
+      u32 sh2cycles;
+      yabsys.SH2CycleFrac += cyclesinc;
+      sh2cycles = (yabsys.SH2CycleFrac >> (YABSYS_TIMING_BITS + 1)) << 1;
+      yabsys.SH2CycleFrac &= ((YABSYS_TIMING_MASK << 1) | 1);
 
 #ifdef YAB_STATICS
-		 u64 current_cpu_clock = YabauseGetTicks();
+      u64 current_cpu_clock = YabauseGetTicks();
 #endif
-         if (!yabsys.playing_ssf)
-         {
-           u32 i;
-           const u32 div = 2;
-           const u32 step  = sh2cycles >> div;
-		       const u32 amari = sh2cycles - (step<< div);
-		   
-           if( amari != 0 ){
-		        SH2Exec(MSH2, amari);
-		        if (yabsys.IsSSH2Running)
-			        SH2Exec(SSH2, amari);
-           }
+      if( sync_shift != 0 ){
+        u32 i;
+        const u32 div = sync_shift;
+        const u32 step  = sh2cycles >> div;
+        const u32 amari = sh2cycles - (step<< div);
 
-           for (i = amari; i < sh2cycles; i += step){ 
-             SH2Exec(MSH2, step);
-             if (yabsys.IsSSH2Running)
-               SH2Exec(SSH2, step);
-           }
-
-         }
-#ifdef YAB_STATICS
-		 cpu_emutime += (YabauseGetTicks() - current_cpu_clock) * 1000000 / yabsys.tickfreq;
-#endif
-
-#ifdef USE_SCSP2
-         PROFILE_START("SCSP");
-         ScspExec(1);
-         PROFILE_STOP("SCSP");
-#endif
-
-         yabsys.DecilineCount++;
-         if(yabsys.DecilineCount == 9)
-         {
-            // HBlankIN
-            PROFILE_START("hblankin");
-            Vdp2HBlankIN();
-            PROFILE_STOP("hblankin");
-         }
-
-         PROFILE_START("SCU");
-         ScuExec(sh2cycles / 2);
-         PROFILE_STOP("SCU");
-
-      } else {  // !DecilineMode
-
-         const u32 decilinecycles = yabsys.DecilineStop >> YABSYS_TIMING_BITS;
-         u32 sh2cycles;
-         yabsys.SH2CycleFrac += cyclesinc;
-         sh2cycles = (yabsys.SH2CycleFrac >> (YABSYS_TIMING_BITS + 1)) << 1;
-         yabsys.SH2CycleFrac &= ((YABSYS_TIMING_MASK << 1) | 1);
-         if (!yabsys.playing_ssf)
-         {
-            PROFILE_START("MSH2");
-            SH2Exec(MSH2, sh2cycles - decilinecycles);
-            PROFILE_STOP("MSH2");
-            PROFILE_START("SSH2");
+        if( amari != 0 ){
+          SH2Exec(MSH2, amari);
+          if (yabsys.IsSSH2Running)
+            SH2Exec(SSH2, amari);
+        }
+        for (i = amari; i < sh2cycles; i += step){ 
+            SH2Exec(MSH2, step);
             if (yabsys.IsSSH2Running)
-               SH2Exec(SSH2, sh2cycles - decilinecycles);
-            PROFILE_STOP("SSH2");
-         }
+               SH2Exec(SSH2, step);
+        }
+      }else{
+        SH2Exec(MSH2, sh2cycles);
+        if (yabsys.IsSSH2Running)
+          SH2Exec(SSH2, sh2cycles);
+      }
 
+#ifdef YAB_STATICS
+      cpu_emutime += (YabauseGetTicks() - current_cpu_clock) * 1000000 / yabsys.tickfreq;
+#endif
+       yabsys.DecilineCount++;
+       if(yabsys.DecilineCount == 9) {
+         // HBlankIN
          PROFILE_START("hblankin");
          Vdp2HBlankIN();
          PROFILE_STOP("hblankin");
-
-         if (!yabsys.playing_ssf)
-         {
-            PROFILE_START("MSH2");
-            SH2Exec(MSH2, decilinecycles);
-            PROFILE_STOP("MSH2");
-            PROFILE_START("SSH2");
-            if (yabsys.IsSSH2Running)
-               SH2Exec(SSH2, decilinecycles);
-            PROFILE_STOP("SSH2");
-         }
-
-#ifdef USE_SCSP2
-         PROFILE_START("SCSP");
-         ScspExec(10);
-         PROFILE_STOP("SCSP");
-#endif
-
-         PROFILE_START("SCU");
-         ScuExec(sh2cycles / 2);
-         PROFILE_STOP("SCU");
-
-      }  // if (yabsys.DecilineMode)
-
-#ifndef USE_SCSP2
-      PROFILE_START("68K");
-      M68KSync();  // Wait for the previous iteration to finish
-      PROFILE_STOP("68K");
-#endif
-
-      if (!yabsys.DecilineMode || yabsys.DecilineCount == 10)
-      {
+       }
+       else if (yabsys.DecilineCount == 10) {
          // HBlankOUT
          PROFILE_START("hblankout");
          Vdp2HBlankOUT();
          PROFILE_STOP("hblankout");
-#ifndef USE_SCSP2
          PROFILE_START("SCSP");
          ScspExec();
          PROFILE_STOP("SCSP");
-#endif
          yabsys.DecilineCount = 0;
          yabsys.LineCount++;
-         if (yabsys.LineCount == yabsys.VBlankLineCount)
-         {
+         if (yabsys.LineCount == yabsys.VBlankLineCount) {
+#if defined(ASYNC_SCSP)
+            setM68kCounter((u64)(44100 * 256 / 60) << SCSP_FRACTIONAL_BITS);
+#endif
             PROFILE_START("vblankin");
             // VBlankIN
             SmpcINTBACKEnd();
             Vdp2VBlankIN();
+#if defined(ASYNC_SCSP)
+            SyncCPUtoSCSP();
+#endif
             PROFILE_STOP("vblankin");
             CheatDoPatches();
          }
@@ -794,6 +752,13 @@ int YabauseEmulate(void) {
          }
       }
 
+      PROFILE_START("SCU");
+      ScuExec(sh2cycles >> 1);
+      PROFILE_STOP("SCU");
+      PROFILE_START("68K");
+      M68KSync();  // Wait for the previous iteration to finish
+      PROFILE_STOP("68K");
+
       yabsys.UsecFrac += usecinc;
       PROFILE_START("SMPC");
       SmpcExec(yabsys.UsecFrac >> YABSYS_TIMING_BITS);
@@ -803,14 +768,14 @@ int YabauseEmulate(void) {
       PROFILE_STOP("CDB");
       yabsys.UsecFrac &= YABSYS_TIMING_MASK;
       
-#ifndef USE_SCSP2
+#if !defined(ASYNC_SCSP)
       if(!use_new_scsp)
       {
          int cycles;
 
          PROFILE_START("68K");
          cycles = m68kcycles;
-		 saved_centicycles += m68kcenticycles;
+         saved_centicycles += m68kcenticycles;
          if (saved_centicycles >= 100) {
             cycles++;
             saved_centicycles -= 100;
@@ -820,7 +785,7 @@ int YabauseEmulate(void) {
       }
       else
       {
-#if !defined(ASYNC_SCSP)
+
          u32 m68k_integer_part = 0, scsp_integer_part = 0;
          saved_m68k_cycles += m68k_cycles_per_deciline;
          m68k_integer_part = saved_m68k_cycles >> SCSP_FRACTIONAL_BITS;
@@ -831,16 +796,15 @@ int YabauseEmulate(void) {
          scsp_integer_part = saved_scsp_cycles >> SCSP_FRACTIONAL_BITS;
          new_scsp_exec(scsp_integer_part);
          saved_scsp_cycles -= scsp_integer_part << SCSP_FRACTIONAL_BITS;
+#else
+      {
+        saved_m68k_cycles  += m68k_cycles_per_deciline;
+        setM68kCounter(saved_m68k_cycles);
 #endif
       }
-#endif
-
       PROFILE_STOP("Total Emulation");
    }
-
-#ifndef USE_SCSP2
    M68KSync();
-#endif
 
 #ifdef YAB_WANT_SSF
 
@@ -854,7 +818,7 @@ int YabauseEmulate(void) {
    
 #ifdef YAB_STATICS
    DebugLog("CPUTIME = %" PRId64 " @ %d \n", cpu_emutime, yabsys.frame_count );
-#if 0
+#if 1
    if (yabsys.frame_count >= 4000 ) {
      static FILE * pfm = NULL;
      if (pfm == NULL) {
@@ -878,8 +842,19 @@ int YabauseEmulate(void) {
 #if DYNAREC_DEVMIYAX
    if (SH2Core->id == 3) SH2DynShowSttaics(MSH2, SSH2);
 #endif
-
    return 0;
+}
+
+
+void SyncCPUtoSCSP() {
+  //LOG("[SH2] WAIT SCSP");
+  if (g_scsp_main_mode == 0) {
+    YabWaitEventQueue(q_scsp_finish);
+    saved_m68k_cycles = 0;
+    setM68kCounter(saved_m68k_cycles);
+    YabAddEventQueue(q_scsp_frame_start, 0);
+  }
+  //LOG("[SH2] START SCSP");
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1273,6 +1248,36 @@ int YabauseQuickLoadGame(void)
       MSH2->regs.PC = 0x06002E00;
       MSH2->regs.R[15] = Cs2GetMasterStackAdress();
       SH2SetRegisters(MSH2, &MSH2->regs);
+
+      Cs2InitializeCDSystem();
+      Cs2Area->reg.CR1 = 0x48fc;
+      Cs2Area->reg.CR2 = 0x0;
+      Cs2Area->reg.CR3 = 0x0;
+      Cs2Area->reg.CR4 = 0x0;
+      Cs2ResetSelector();
+      Cs2GetToc();
+
+      // LANGRISSER Dramatic Edition #531
+      // This game uses Color ram data written by BIOS
+      // So it need to write them before start game on no bios mode.
+      Vdp2WriteWord(0x0E,0); // set color mode to 0
+      Vdp2ColorRamWriteWord(0x0, 0x8000);
+      Vdp2ColorRamWriteWord(0x2, 0x9908);
+      Vdp2ColorRamWriteWord(0x4, 0xCA94);
+      Vdp2ColorRamWriteWord(0x6, 0xF39C);
+      Vdp2ColorRamWriteWord(0x8, 0xFBDE);
+      Vdp2ColorRamWriteWord(0xA, 0xFB16);
+      Vdp2ColorRamWriteWord(0xC, 0x9084);
+      Vdp2ColorRamWriteWord(0xE, 0xF20C);
+      Vdp2ColorRamWriteWord(0x10, 0xF106);
+      Vdp2ColorRamWriteWord(0x12, 0xF18A);
+      Vdp2ColorRamWriteWord(0x14, 0xB9CE);
+      Vdp2ColorRamWriteWord(0x16, 0xA14A);
+      Vdp2ColorRamWriteWord(0x18, 0xE318);
+      Vdp2ColorRamWriteWord(0x1A, 0xEB5A);
+      Vdp2ColorRamWriteWord(0x1C, 0xF39C);
+      Vdp2ColorRamWriteWord(0x1E, 0xFBDE);
+      Vdp2ColorRamWriteWord(0xFF, 0x0000);
    }
    else
    {
@@ -1289,5 +1294,20 @@ int YabauseQuickLoadGame(void)
 
    return 0;
 }
+
+// non standard function
+#include <malloc.h>
+char* strdup_ (const char* s)
+{
+  size_t slen = strlen(s);
+  char* result = (char*)malloc(slen + 1);
+  if(result == NULL)
+  {
+    return NULL;
+  }
+  memcpy(result, s, slen+1);
+  return result;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////

@@ -441,6 +441,14 @@ int VideoSetFilterType( int video_filter_type );
 void vdp2ReqDump();
 void vdp2ReqRestore();
 
+void VdpLockVram();
+void VdpUnLockVram();
+
+void YglOnUpdateColorRamWord(u32 addr);
+void YglUpdateColorRam();
+void VdpResume( void );
+void VdpRevoke( void );
+
 #ifdef __cplusplus
 }
 #endif

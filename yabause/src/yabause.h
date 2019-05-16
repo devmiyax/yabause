@@ -60,6 +60,10 @@ typedef struct
    int use_new_scsp;
    int resolution_mode;
    int extend_backup;
+   int rotate_screen;
+   int scsp_sync_count_per_frame;
+   int scsp_main_mode;
+   u32 sync_shift;
 } yabauseinit_struct;
 
 #define CLKTYPE_26MHZ           0
@@ -115,6 +119,7 @@ typedef struct
    int playing_ssf;
    u32 frame_count;
    int extend_backup;
+   u32 sync_shift;
 } yabsys_struct;
 
 extern yabsys_struct yabsys;
@@ -122,10 +127,22 @@ extern yabsys_struct yabsys;
 int YabauseEmulate(void);
 
 extern u32 saved_scsp_cycles;
-extern u32 saved_m68k_cycles;
+extern volatile u64 saved_m68k_cycles;
 #define SCSP_FRACTIONAL_BITS 20
 u32 get_cycles_per_line_division(u32 clock, int frames, int lines, int divisions_per_line);
 u32 YabauseGetCpuTime();
+
+typedef enum {
+  VDP_SETTING_FILTERMODE = 0,
+  VDP_SETTING_POLYGON_MODE,
+  VDP_SETTING_RESOLUTION_MODE,
+  VDP_SETTING_ROTATE_SCREEN
+} enSettings;
+
+int VideoSetSetting(int type, int value);
+
+int yprintf( const char * fmt, ... );
+
 
 #ifdef __cplusplus
 }

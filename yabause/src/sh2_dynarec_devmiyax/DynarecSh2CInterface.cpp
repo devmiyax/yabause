@@ -17,14 +17,14 @@ along with Yabause; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-#include <core.h>
+#include "../core.h"
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h> 
 #include <stdint.h>
-#include "sh2core.h"
+#include "../sh2core.h"
 #include "DynarecSh2.h"
-#include "debug.h"
+#include "../debug.h"
 #include "yabause.h"
 
 
@@ -55,10 +55,13 @@ void SH2DynSetMACH(SH2_struct *context, u32 value);
 void SH2DynSetMACL(SH2_struct *context, u32 value);
 void SH2DynSetPR(SH2_struct *context, u32 value);
 void SH2DynSetPC(SH2_struct *context, u32 value);
+void SH2DynOnFrame(SH2_struct *context);
 void SH2DynSendInterrupt(SH2_struct *context, u8 level, u8 vector);
+void SH2DynRemoveInterrupt(SH2_struct *context, u8 level, u8 vector);
 int SH2DynGetInterrupts(SH2_struct *context, interrupt_struct interrupts[MAX_INTERRUPTS]);
 void SH2DynSetInterrupts(SH2_struct *context, int num_interrupts, const interrupt_struct interrupts[MAX_INTERRUPTS]);
 void SH2DynWriteNotify(u32 start, u32 length);
+void SH2DynAddCycle(SH2_struct *context, u32 value);
 
 SH2Interface_struct SH2Dyn = {
   SH2CORE_DYNAMIC,
@@ -88,11 +91,14 @@ SH2Interface_struct SH2Dyn = {
   SH2DynSetMACL,
   SH2DynSetPR,
   SH2DynSetPC,
+  SH2DynOnFrame,
 
   SH2DynSendInterrupt,
+  SH2DynRemoveInterrupt,
   SH2DynGetInterrupts,
   SH2DynSetInterrupts,
-  SH2DynWriteNotify
+  SH2DynWriteNotify,
+  SH2DynAddCycle
 };
 
 SH2Interface_struct SH2DynDebug = {
@@ -123,11 +129,14 @@ SH2Interface_struct SH2DynDebug = {
   SH2DynSetMACL,
   SH2DynSetPR,
   SH2DynSetPC,
+  SH2DynOnFrame,
 
   SH2DynSendInterrupt,
+  SH2DynRemoveInterrupt,
   SH2DynGetInterrupts,
   SH2DynSetInterrupts,
-  SH2DynWriteNotify
+  SH2DynWriteNotify,
+  SH2DynAddCycle
 };
 
 int SH2DynInit(void) {
@@ -187,6 +196,12 @@ void SH2DynSendInterrupt(SH2_struct *context, u8 vector, u8 level){
   DynarecSh2 *pctx = (DynarecSh2*)context->ext;
   pctx->AddInterrupt(vector, level);
 }
+
+void SH2DynRemoveInterrupt(SH2_struct *context, u8 vector, u8 level) {
+  DynarecSh2 *pctx = (DynarecSh2*)context->ext;
+  pctx->RemoveInterrupt(vector, level);
+}
+
 
 int SH2DynGetInterrupts(SH2_struct *context, interrupt_struct interrupts[MAX_INTERRUPTS]){
   DynarecSh2 *pctx = (DynarecSh2*)context->ext;
@@ -316,6 +331,12 @@ void SH2DynSetPC(SH2_struct *context, u32 value){
   pctx->SET_PC(value);
 }
 
+void SH2DynAddCycle(SH2_struct *context, u32 value) {
+  DynarecSh2 *pctx = (DynarecSh2*)context->ext;
+  pctx->AddCycle(value);
+}
+
+
 void SH2DynWriteNotify(u32 start, u32 length){
   CompileBlocks * block = CompileBlocks::getInstance();
   
@@ -333,7 +354,11 @@ void SH2DynWriteNotify(u32 start, u32 length){
     // High Memory
   case 0x06000000:
     for( u32 addr = start; addr< start+length; addr+=2 )
-      block->setDirty(addr);
+#if defined(SET_DIRTY)
+    block->setDirty(addr);
+#else
+    block->LookupTable[ (addr&0x000FFFFF)>>1 ] = NULL;
+#endif
     break;
 
     // Cache
@@ -364,21 +389,28 @@ void memSetByte(u32 addr , u8 data )
 {
   dynaLock();
   //LOG("memSetWord %08X, %08X\n", addr, data);
-
   CompileBlocks * block = CompileBlocks::getInstance();
   switch (addr & 0x0FF00000)
   {
   // Low Memory
   case 0x00200000:
+  case 0x20200000:
     block->LookupTableLow[  (addr&0x000FFFFF)>>1 ] = NULL;
+    T2WriteByte(LowWram, addr & 0xFFFFF, data);
+    dynaFree();
+    return;
     break;
   // High Memory
   case 0x06000000:
+  case 0x26000000:
 #if defined(SET_DIRTY)
     block->setDirty(addr);
 #else
     block->LookupTable[ (addr&0x000FFFFF)>>1 ] = NULL;
 #endif
+    T2WriteByte(HighWram, addr & 0xFFFFF, data);
+    dynaFree();
+    return;
     break;
 
   // Cache
@@ -398,20 +430,27 @@ void memSetWord(u32 addr, u16 data )
   //LOG("memSetWord %08X, %08X\n", addr, data);
 
   CompileBlocks * block = CompileBlocks::getInstance();
-  switch (addr & 0x0FF00000)
+  switch (addr & 0xFFF00000)
   {
   // Low Memory
    case 0x00200000:
+   case 0x20200000:
     block->LookupTableLow[ (addr&0x000FFFFF)>>1 ] = NULL;
+    T2WriteWord(LowWram, addr & 0xFFFFF, data);
+    dynaFree();
+    return;
     break;
   // High Memory
-   case 0x06000000: {
+   case 0x06000000: 
+   case 0x26000000: {
 #if defined(SET_DIRTY)
      block->setDirty(addr);
 #else
      block->LookupTable[(addr & 0x000FFFFF) >> 1] = NULL;
 #endif
-    
+    T2WriteWord(HighWram, addr & 0xFFFFF, data);
+    dynaFree();
+    return;
    }
     break;
   // Cache
@@ -431,15 +470,20 @@ void memSetLong(u32 addr , u32 data )
   //LOG("memSetLong %08X, %08X\n", addr, data);
 
   CompileBlocks * block = CompileBlocks::getInstance();
-  switch (addr & 0x0FF00000)
+  switch (addr & 0xFFF00000)
   {  
     // Low Memory
   case 0x00200000:
+  case 0x20200000:
     block->LookupTableLow[ (addr & 0x000FFFFF)>>1  ] = NULL;
     block->LookupTableLow[ ((addr & 0x000FFFFF)>>1) + 1 ] = NULL;
+    T2WriteLong(LowWram, addr & 0xFFFFF, data);
+    dynaFree();
+    return;
     break;
   // High Memory
   case 0x06000000:
+  case 0x26000000:
 #if defined(SET_DIRTY)
     block->setDirty(addr);
     block->setDirty(addr+2);
@@ -447,6 +491,9 @@ void memSetLong(u32 addr , u32 data )
     block->LookupTable[(addr & 0x000FFFFF) >> 1] = NULL;
     block->LookupTable[((addr & 0x000FFFFF) >> 1) + 1] = NULL;
 #endif
+    T2WriteLong(HighWram, addr & 0xFFFFF, data);
+    dynaFree();
+    return;
     break;
 
   // Cache
@@ -464,7 +511,20 @@ u8 memGetByte(u32 addr)
 {
   dynaLock();
   u8 val;
-  val = MappedMemoryReadByte(addr);
+  switch (addr & 0xFFF00000)
+  {  
+  case 0x00200000: // Low Memory
+  case 0x20200000: // Low Memory
+    val = T2ReadByte(LowWram, addr & 0xFFFFF);
+    break;
+  case 0x06000000: // High Memory
+  case 0x26000000: // Low Memory
+    val = T2ReadByte(HighWram, addr & 0xFFFFF);
+    break;
+  default:
+    val = MappedMemoryReadByte(addr);
+    break;
+  }
   dynaFree();
   return val;
 }
@@ -473,7 +533,22 @@ u16 memGetWord(u32 addr)
 {
   dynaLock();
   u16 val;
-  val = MappedMemoryReadWord(addr);
+  switch (addr & 0xFFF00000)
+  {  
+    // Low Memory
+  case 0x00200000:
+  case 0x20200000: // Low Memory
+    val = T2ReadWord(LowWram, addr & 0xFFFFF);
+    break;
+  // High Memory
+  case 0x06000000:
+  case 0x26000000:
+    val = T2ReadWord(HighWram, addr & 0xFFFFF);
+    break;
+  default:
+    val = MappedMemoryReadWord(addr);
+    break;
+  }
   dynaFree();
   return val;
 }
@@ -484,12 +559,32 @@ u32 memGetLong(u32 addr)
 {
   dynaLock();
   u32 val;
-  val = MappedMemoryReadLong(addr);
+
+  switch (addr & 0xFFF00000)
+  {  
+    // Low Memory
+  case 0x00200000:
+  case 0x20200000:
+    val = T2ReadLong(LowWram, addr & 0xFFFFF);
+    break;
+  // High Memory
+  case 0x06000000:
+  case 0x26000000:
+    val = T2ReadLong(HighWram, addr & 0xFFFFF);
+    break;
+  default:
+    val = MappedMemoryReadLong(addr);
+    break;
+  }
   dynaFree();
   return val;
 }
 
-
+void SH2DynOnFrame(SH2_struct *context) {
+  DynarecSh2 *pctx = (DynarecSh2*)context->ext;
+  pctx->SET_COUNT(0);
+  pctx->onFrame();
+}
 
 
 //************************************************
@@ -521,6 +616,8 @@ int DebugEachClock() {
 
   #define INSTRUCTION_B(x) ((x & 0x0F00) >> 8)
   #define INSTRUCTION_C(x) ((x & 0x00F0) >> 4)
+
+  //printf("PC:%08X\n",DynarecSh2::CurrentContext->GET_PC());
 
 #if 0
   u32 pc = DynarecSh2::CurrentContext->GET_PC();
@@ -589,7 +686,7 @@ if( pc == 0x060133C8 ) {
 
 #ifdef DMPHISTORY
   CurrentSH2->pchistory_index++;
-  CurrentSH2->pchistory[CurrentSH2->pchistory_index & 0xFF] = DynarecSh2::CurrentContext->GET_PC();
+  CurrentSH2->pchistory[CurrentSH2->pchistory_index & (MAX_DMPHISTORY-1) ] = DynarecSh2::CurrentContext->GET_PC();
   //CurrentSH2->regshistory[CurrentSH2->pchistory_index & 0xFF] = NULL;
 #endif
   DynaCheckBreakPoint(DynarecSh2::CurrentContext->GET_PC());
@@ -615,3 +712,4 @@ int EachClock() {
 
 
 }
+

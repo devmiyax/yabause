@@ -95,6 +95,15 @@ typedef struct
    u32 timer1;
    scuinterrupt_struct interrupts[30];
    u32 NumberOfInterrupts;
+   s32 timer1_counter;
+   u32 timer0_set;
+   u32 timer1_set;
+   s32 timer1_preset;
+
+   s32 dma0_time;
+   s32 dma1_time;
+   s32 dma2_time;
+
 } Scu;
 
 extern Scu * ScuRegs;

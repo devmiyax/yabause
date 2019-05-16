@@ -71,17 +71,20 @@ void FASTCALL Vdp1RamWriteByte(u32 addr, u8 val) {
    T1WriteByte(Vdp1Ram, addr, val);
 }
 
-//////////////////////////////////////////////////////////////////////////////
+#include "sh2core.h"
 
+//////////////////////////////////////////////////////////////////////////////
 void FASTCALL Vdp1RamWriteWord(u32 addr, u16 val) {
    addr &= 0x7FFFF;
    T1WriteWord(Vdp1Ram, addr, val);
 }
 
 //////////////////////////////////////////////////////////////////////////////
-
 void FASTCALL Vdp1RamWriteLong(u32 addr, u32 val) {
    addr &= 0x7FFFF;
+   if(addr == 0x00000)
+    LOG("Vdp1RamWriteLong @ %08X", CurrentSH2->regs.PC);
+
    T1WriteLong(Vdp1Ram, addr, val);
 }
 
@@ -91,7 +94,9 @@ u8 FASTCALL Vdp1FrameBufferReadByte(u32 addr) {
    addr &= 0x3FFFF;
    if (VIDCore->Vdp1ReadFrameBuffer && addr < 0x30000 ){
      u8 val;
+     VdpLockVram();
      VIDCore->Vdp1ReadFrameBuffer(0, addr, &val);
+     VdpUnLockVram();
      return val;
    }
    return T1ReadByte(Vdp1FrameBuffer[Vdp1External.current_frame], addr);
@@ -103,7 +108,9 @@ u16 FASTCALL Vdp1FrameBufferReadWord(u32 addr) {
    addr &= 0x3FFFF;
    if (VIDCore->Vdp1ReadFrameBuffer && addr < 0x30000 ){
      u16 val;
+     VdpLockVram();
      VIDCore->Vdp1ReadFrameBuffer(1, addr, &val);
+     VdpUnLockVram();
      return val;
    } 
    return T1ReadWord(Vdp1FrameBuffer[Vdp1External.current_frame], addr);
@@ -115,7 +122,9 @@ u32 FASTCALL Vdp1FrameBufferReadLong(u32 addr) {
    addr &= 0x3FFFF;
    if (VIDCore->Vdp1ReadFrameBuffer && addr < 0x30000 ){
      u32 val;
+     VdpLockVram();
      VIDCore->Vdp1ReadFrameBuffer(2, addr, &val);
+     VdpUnLockVram();
      return val;
    }
    return T1ReadLong(Vdp1FrameBuffer[Vdp1External.current_frame], addr);
@@ -128,7 +137,9 @@ void FASTCALL Vdp1FrameBufferWriteByte(u32 addr, u8 val) {
 
    if (VIDCore->Vdp1WriteFrameBuffer)
    {
+      VdpLockVram();
       VIDCore->Vdp1WriteFrameBuffer(0, addr, val);
+      VdpUnLockVram();
       return;
    }
 
@@ -142,7 +153,9 @@ void FASTCALL Vdp1FrameBufferWriteWord(u32 addr, u16 val) {
 
    if (VIDCore->Vdp1WriteFrameBuffer)
    {
+      VdpLockVram();
       VIDCore->Vdp1WriteFrameBuffer(1, addr, val);
+      VdpUnLockVram();
       return;
    }
 
@@ -156,7 +169,9 @@ void FASTCALL Vdp1FrameBufferWriteLong(u32 addr, u32 val) {
 
    if (VIDCore->Vdp1WriteFrameBuffer)
    {
+      VdpLockVram();
       VIDCore->Vdp1WriteFrameBuffer(2, addr, val);
+      VdpUnLockVram();
       return;
    }
 
@@ -301,12 +316,15 @@ u16 FASTCALL Vdp1ReadWord(u32 addr) {
         return Vdp1Regs->EDSR;
       case 0x12:
         FRAMELOG("Read LOPR %X line = %d\n", Vdp1Regs->LOPR, yabsys.LineCount);
-         return Vdp1Regs->LOPR;
+        return Vdp1Regs->LOPR;
       case 0x14:
         FRAMELOG("Read COPR %X line = %d\n", Vdp1Regs->COPR, yabsys.LineCount);
-         return Vdp1Regs->COPR;
-      case 0x16:
-         return 0x1000 | ((Vdp1Regs->PTMR & 2) << 7) | ((Vdp1Regs->FBCR & 0x1E) << 3) | (Vdp1Regs->TVMR & 0xF);
+        return Vdp1Regs->COPR;
+      case 0x16: {
+        u16 mode = 0x1000 | ((Vdp1Regs->PTMR & 2) << 7) | ((Vdp1Regs->FBCR & 0x1E) << 3) | (Vdp1Regs->TVMR & 0xF);
+        FRAMELOG("Read MODR %X line = %d\n", mode, yabsys.LineCount);
+        return mode;
+      }
       default:
          LOG("trying to read a Vdp1 write-only register\n");
    }
@@ -337,27 +355,28 @@ void FASTCALL Vdp1WriteWord(u32 addr, u16 val) {
   switch(addr) {
     case 0x0:
       Vdp1Regs->TVMR = val;
-      FRAMELOG("Write VBE=%d line = %d\n", (Vdp1Regs->TVMR >> 3) & 0x01, yabsys.LineCount);
+      FRAMELOG("[VDP1] Write VBE=%d line = %d", (Vdp1Regs->TVMR >> 3) & 0x01, yabsys.LineCount);
     break;
     case 0x2:
-      FRAMELOG("Write FCM=%d FCT=%d VBE=%d line = %d\n", (val & 0x02) >> 1, (val & 0x01), (Vdp1Regs->TVMR >> 3) & 0x01, yabsys.LineCount);
+      FRAMELOG("[VDP1] Write FCM=%d FCT=%d line = %d", (val & 0x02) >> 1, (val & 0x01), yabsys.LineCount);
       Vdp1Regs->FBCR = val;
       if ((Vdp1Regs->FBCR & 3) == 3) {
-        FRAMELOG("manual change\n");
+        //FRAMELOG("[VDP1] FCBR swtich to manual change");
         Vdp1External.manualchange = 1;
       }
       else if ((Vdp1Regs->FBCR & 3) == 2) {
-        FRAMELOG("manual release\n");
+        //FRAMELOG("[VDP1] FBCR swtich to manual erase");
         Vdp1External.manualerase = 1;
       }
       break;
     case 0x4:
-      FRAMELOG("Write PTMR %X line = %d", val, yabsys.LineCount);
-      Vdp1Regs->COPR = 0;
+      FRAMELOG("[VDP1] Write PTMR %X line = %d @ %08X", val, yabsys.LineCount, CurrentSH2->regs.PC);
+      //Vdp1Regs->COPR = 0;
+      //printf("COPR = 0 at %d\n", __LINE__);
       Vdp1Regs->PTMR = val;
 #if YAB_ASYNC_RENDERING
       if (val == 1){ 
-        FRAMELOG("VDP1: VDPEV_DIRECT_DRAW %d/%d", YaGetQueueSize(vdp1_rcv_evqueue), yabsys.LineCount);
+        FRAMELOG("[VDP1] VDPEV_DIRECT_DRAW %d/%d", YaGetQueueSize(vdp1_rcv_evqueue), yabsys.LineCount);
         if ( YaGetQueueSize(vdp1_rcv_evqueue) > 0){
           yabsys.wait_line_count = -1;
           do{
@@ -367,6 +386,7 @@ void FASTCALL Vdp1WriteWord(u32 addr, u16 val) {
         Vdp1Regs->EDSR >>= 1;
         yabsys.wait_line_count = yabsys.LineCount + 50;
         yabsys.wait_line_count %= yabsys.MaxLineCount;
+        if (yabsys.wait_line_count == 0) { yabsys.wait_line_count = 1; }
         FRAMELOG("SET DIRECT WAIT %d", yabsys.wait_line_count);
         YabAddEventQueue(evqueue,VDPEV_DIRECT_DRAW); 
         YabThreadYield();
@@ -377,6 +397,10 @@ void FASTCALL Vdp1WriteWord(u32 addr, u16 val) {
         Vdp1Regs->EDSR >>= 1;
         Vdp1Draw(); 
         VIDCore->Vdp1DrawEnd();
+        yabsys.wait_line_count = yabsys.LineCount + 50;
+        yabsys.wait_line_count %= yabsys.MaxLineCount;
+        if (yabsys.wait_line_count == 0) { yabsys.wait_line_count = 1; }
+        FRAMELOG("VDP1: end line is %d", yabsys.wait_line_count);
     }
 #endif
          break;
@@ -413,6 +437,7 @@ void Vdp1DrawCommands(u8 * ram, Vdp1 * regs, u8* back_framebuffer)
    u32 returnAddr = 0xffffffff;
 
    while (!(command & 0x8000) && commandCounter < 2000) { // fix me
+      regs->COPR = regs->addr >> 3;
       // First, process the command
       if (!(command & 0x4000)) { // if (!skip)
          switch (command & 0x000F) {
@@ -490,6 +515,7 @@ void Vdp1DrawCommands(u8 * ram, Vdp1 * regs, u8* back_framebuffer)
       command = T1ReadWord(ram, regs->addr);
       commandCounter++;
    }
+   FRAMELOG("comand count = %d", commandCounter);
 }
 
 //ensure that registers are set correctly 
@@ -578,8 +604,11 @@ void Vdp1Draw(void)
    //Vdp1Regs->EDSR >>= 1;
    /* this should be done after a frame change or a plot trigger */
    Vdp1Regs->COPR = 0;
+   //printf("COPR = %d at %d\n", Vdp1Regs->COPR, __LINE__);
 
    VIDCore->Vdp1DrawStart();
+
+   //printf("COPR = %d at %d\n", Vdp1Regs->COPR, __LINE__);
 
    //VIDCore->Vdp1DrawEnd();
 

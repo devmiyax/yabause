@@ -27,6 +27,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -219,6 +220,10 @@ public class YabauseSettings extends PreferenceActivity implements SharedPrefere
             filter_setting.setEnabled(false);
         }
 
+        EditTextPreference scsp_setting = (EditTextPreference) getPreferenceManager().findPreference("pref_scsp_sync_per_frame");
+        scsp_setting.setSummary(scsp_setting.getText());
+
+
          /* Polygon Generation */
         ListPreference polygon_setting = (ListPreference) getPreferenceManager().findPreference("pref_polygon_generation");
         polygon_setting.setSummary(polygon_setting.getEntry());
@@ -273,6 +278,9 @@ public class YabauseSettings extends PreferenceActivity implements SharedPrefere
 
         ListPreference resolution_setting = (ListPreference) getPreferenceManager().findPreference("pref_resolution");
         resolution_setting.setSummary(resolution_setting.getEntry());
+
+        ListPreference scsp_time_sync_setting = (ListPreference) getPreferenceManager().findPreference("scsp_time_sync_mode");
+        scsp_time_sync_setting.setSummary(scsp_time_sync_setting.getEntry());
 
       }
 
@@ -395,11 +403,11 @@ public class YabauseSettings extends PreferenceActivity implements SharedPrefere
             }
         }
     }
-    
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals("pref_bios") || 
-            key.equals("pref_cart") || 
+        if (key.equals("pref_bios") ||
+                key.equals("scsp_time_sync_mode") ||
+                key.equals("pref_cart") ||
             key.equals("pref_video") || 
             key.equals("pref_cpu") || 
             key.equals("pref_filter") || 
@@ -436,6 +444,22 @@ public class YabauseSettings extends PreferenceActivity implements SharedPrefere
                 pref.setSummary(pref.getEntry());
                 SyncInputDevice();
                 SyncInputDeviceForPlayer2();
+            }
+
+            if( key.equals("pref_scsp_sync_per_frame") ){
+                EditTextPreference ep = (EditTextPreference)findPreference(key);
+                String sval = ep.getText();
+                int val =  Integer.parseInt(sval);
+                if( val <= 0 ){
+                    val = 1;
+                    SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+                    sp.edit().putString("pref_scsp_sync_per_frame", String.valueOf(val)).commit();
+                }else if( val > 255 ){
+                    val = 255;
+                    SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+                    sp.edit().putString("pref_scsp_sync_per_frame", String.valueOf(val)).commit();
+                }
+                ep.setSummary( String.valueOf(val) );
             }
 
       }

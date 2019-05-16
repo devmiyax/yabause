@@ -28,7 +28,7 @@ extern "C" {
 #include <stdlib.h>
 #include "core.h"
 
-#define CACHE_ENABLE 0 
+//#define CACHE_ENABLE 0 
 
   /* Type 1 Memory, faster for byte (8 bits) accesses */
 
@@ -418,6 +418,14 @@ extern "C" {
   int YabLoadStateStream(FILE *stream);
   int YabSaveStateBuffer(void **buffer, size_t *size);
   int YabLoadStateBuffer(const void *buffer, size_t size);
+
+// Mapped mewmory
+void * YabMemMap(char * filename, u32 size );
+void YabFreeMap(void * p);
+int ExtendBackupFile(FILE *fp, u32 size );
+void FormatBackupRamFile(FILE *fp, u32 size);
+void FormatBackupRam(void *mem, u32 size);
+int CheckBackupFile(FILE *fp);
 
 #ifdef __cplusplus
 }

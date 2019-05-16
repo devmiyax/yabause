@@ -193,11 +193,19 @@ void FASTCALL SH2Exec(SH2_struct *context, u32 cycles)
    //   context->cycles -= cycles;
 }
 
+void FASTCALL SH2OnFrame(SH2_struct *context) {
+  SH2Core->OnFrame(context);
+}
 //////////////////////////////////////////////////////////////////////////////
 
 void SH2SendInterrupt(SH2_struct *context, u8 vector, u8 level)
 {
    SH2Core->SendInterrupt(context, vector, level);
+}
+
+void SH2RemoveInterrupt(SH2_struct *context, u8 vector, u8 level)
+{
+  SH2Core->RemoveInterrupt(context, vector, level);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1109,6 +1117,7 @@ u8 FASTCALL OnchipReadByte(u32 addr) {
       case 0x010:
          return CurrentSH2->onchip.TIER;
       case 0x011:
+        if (CurrentSH2->onchip.FTCSR & 0x80) { LOG("Read FTCSR = 0x80"); }
          return CurrentSH2->onchip.FTCSR;
       case 0x012:         
          return CurrentSH2->onchip.FRC.part.H;
@@ -1343,6 +1352,23 @@ void FASTCALL OnchipWriteByte(u32 addr, u8 val) {
          return;
       case 0x011:
          CurrentSH2->onchip.FTCSR = (CurrentSH2->onchip.FTCSR & (val & 0xFE)) | (val & 0x1);
+/*
+         if( (CurrentSH2->onchip.FTCSR & 0x80) == 0x00 ){
+           if (CurrentSH2->depth < 4) {
+             CurrentSH2->depth++;
+             SH2_struct * tmpCurrentSH2 = CurrentSH2;
+             if (CurrentSH2->isslave) {
+               //SH2Exec(MSH2, 1);
+             }
+             else {
+               //SH2Exec(SSH2, 1);
+             }
+             CurrentSH2 = tmpCurrentSH2;
+             CurrentSH2->depth--;
+           }
+         }
+*/         
+         LOG("Write FTCSR = %X\n", CurrentSH2->onchip.FTCSR);
          return;
       case 0x012:
          CurrentSH2->onchip.FRC.part.H = val;
@@ -2045,7 +2071,7 @@ void DMATransfer(u32 *CHCR, u32 *SAR, u32 *DAR, u32 *TCR, u32 *VCRDMA)
    int size;
    u32 i, i2;
 
-   //LOG("sh2 dma src=%08X,dst=%08X,%d\n", *SAR, *DAR, *TCR);
+   LOG("sh2 dma src=%08X,dst=%08X,%d\n", *SAR, *DAR, *TCR);
 
    if (!(*CHCR & 0x2)) { // TE is not set
       int srcInc;
@@ -2099,20 +2125,39 @@ void DMATransfer(u32 *CHCR, u32 *SAR, u32 *DAR, u32 *TCR, u32 *VCRDMA)
 
             *TCR = 0;
             break;
-         case 3:
-            destInc *= 4;
-            srcInc *= 4;
-
-            for (i = 0; i < *TCR; i+=4) {
-               for(i2 = 0; i2 < 4; i2++) {
-				   MappedMemoryWriteLongNocache(*DAR, MappedMemoryReadLongNocache(*SAR));
-                  *DAR += destInc;
-                  *SAR += srcInc;
+         case 3: {
+           u32 buffer[4];
+           u32 show = 0;
+           if (*DAR == 0x260A90F8) {
+             show = 1;
+           }
+           destInc *= 4;
+           srcInc *= 4;
+           for (i = 0; i < *TCR; i += 4) {
+             for (i2 = 0; i2 < 4; i2++) {
+               buffer[i2] = MappedMemoryReadLongNocache((*SAR + (i2 << 2) & 0x07FFFFFC));
+             }
+             *SAR += 0x10;
+             for (i2 = 0; i2 < 4; i2++) {
+               MappedMemoryWriteLongNocache(*DAR & 0x07FFFFFC, buffer[i2]);
+               if (show) {
+                 LOG("mov %08X @%08X", buffer[i2], *DAR);
                }
-            }
-
-            *TCR = 0;
-            break;
+               *DAR += destInc;
+             }
+           }
+/*
+           for (i = 0; i < *TCR; i += 4) {
+             for (i2 = 0; i2 < 4; i2++) {
+               MappedMemoryWriteLongNocache(*DAR, MappedMemoryReadLongNocache(*SAR));
+               *DAR += destInc;
+               *SAR += srcInc;
+             }
+           }
+*/
+           *TCR = 0;
+         }
+         break;
       }
       SH2WriteNotify(destInc<0?*DAR:*DAR-i*destInc,i*abs(destInc));
    }
@@ -2136,9 +2181,25 @@ void FASTCALL MSH2InputCaptureWriteWord(UNUSED u32 addr, UNUSED u16 data)
    // Copy FRC register to FICR
    MSH2->onchip.FICR = MSH2->onchip.FRC.all;
 
+   LOG("MSH2InputCapture\n");
+
    // Time for an Interrupt?
    if (MSH2->onchip.TIER & 0x80)
       SH2SendInterrupt(MSH2, (MSH2->onchip.VCRC >> 8) & 0x7F, (MSH2->onchip.IPRB >> 8) & 0xF);
+/*
+   if (CurrentSH2->depth < 4) {
+     CurrentSH2->depth++;
+     SH2_struct * tmpCurrentSH2 = CurrentSH2;
+     if (CurrentSH2->isslave) {
+       SH2Exec(MSH2, 32);
+     }
+     else {
+       SH2Exec(SSH2, 32);
+     }
+     CurrentSH2 = tmpCurrentSH2;
+     CurrentSH2->depth--;
+   }
+*/
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2151,9 +2212,25 @@ void FASTCALL SSH2InputCaptureWriteWord(UNUSED u32 addr, UNUSED u16 data)
    // Copy FRC register to FICR
    SSH2->onchip.FICR = SSH2->onchip.FRC.all;
 
+   LOG("SSH2InputCapture\n");
+
    // Time for an Interrupt?
    if (SSH2->onchip.TIER & 0x80)
       SH2SendInterrupt(SSH2, (SSH2->onchip.VCRC >> 8) & 0x7F, (SSH2->onchip.IPRB >> 8) & 0xF);
+
+   if (CurrentSH2->depth < 4) {
+     CurrentSH2->depth++;
+     SH2_struct * tmpCurrentSH2 = CurrentSH2;
+     if (CurrentSH2->isslave) {
+       SH2Exec(MSH2, 32);
+     }
+     else {
+       SH2Exec(SSH2, 32);
+     }
+     CurrentSH2 = tmpCurrentSH2;
+     CurrentSH2->depth--;
+   }
+
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2274,13 +2351,17 @@ void SH2DumpHistory(SH2_struct *context){
 
 #ifdef DMPHISTORY
 	FILE * history = NULL;
-	history = fopen("history.txt", "w");
+#if defined(ANDROID)
+	history = fopen("/mnt/sdcard/history.txt", "w");
+#else
+        history = fopen("history.txt", "w");
+#endif
 	if (history){
 		int i;
 		int index = context->pchistory_index;
-		for (i = 0; i < 0xFF; i++){
+		for (i = 0; i < (MAX_DMPHISTORY - 1); i++){
 		  char lineBuf[128];
-		  SH2Disasm(context->pchistory[(index & 0xFF)], MappedMemoryReadWord(context->pchistory[(index & 0xFF)]), 0, NULL /*&context->regshistory[index & 0xFF]*/, lineBuf);
+		  SH2Disasm(context->pchistory[(index & (MAX_DMPHISTORY - 1))], MappedMemoryReadWord(context->pchistory[(index & (MAX_DMPHISTORY - 1))]), 0, NULL /*&context->regshistory[index & 0xFF]*/, lineBuf);
 		  fprintf(history,lineBuf);
 		  fprintf(history, "\n");
 		  index--;

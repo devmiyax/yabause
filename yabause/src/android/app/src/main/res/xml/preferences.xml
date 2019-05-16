@@ -39,6 +39,15 @@
             android:entries="@array/entries_cpu_list_preference"
             android:entryValues="@array/entryvalues_cpu_list_preference"
             android:defaultValue="3" />
+<!--
+        <ListPreference
+            android:key="pref_cpu_sync_per_line"
+            android:title="@string/cpu_sync_per_line"
+            android:dialogTitle="@string/sel_cpu_sync_per_line"
+            android:entries="@array/entries_cpu_sync_per_line"
+            android:entryValues="@array/entryvalues_cpu_sync_per_line"
+            android:defaultValue="0" />
+-->
 	</PreferenceCategory>
 
 
@@ -58,7 +67,7 @@
         <CheckBoxPreference
             android:key="pref_frameskip"
             android:title="@string/frameskip"
-            android:defaultValue="false" />
+            android:defaultValue="true" />
         
         <CheckBoxPreference
             android:key="pref_keepaspectrate"
@@ -68,6 +77,11 @@
         <CheckBoxPreference
             android:key="pref_landscape"
             android:title="@string/lock_landscape"
+            android:defaultValue="false" />
+
+        <CheckBoxPreference
+            android:key="pref_rotate_screen"
+            android:title="@string/str_rotate_screen"
             android:defaultValue="false" />
 
         <ListPreference
@@ -146,6 +160,21 @@
             android:entries="@array/entries_sound_engine_list_preference"
             android:entryValues="@array/entryvalues_sound_engine_list_preference"
             android:defaultValue="1" />
+
+        <ListPreference
+            android:key="scsp_time_sync_mode"
+            android:title="@string/time_synchronization_mode"
+            android:dialogTitle="@string/choose_time_synchronization_mode"
+            android:entries="@array/entries_scsp_time_synchronization_mode"
+            android:entryValues="@array/entryvalues_scsp_time_synchronization_mode"
+            android:defaultValue="1" />
+
+        <EditTextPreference
+            android:key="pref_scsp_sync_per_frame"
+            android:inputType="number"
+            android:defaultValue="1"
+            android:summary=""
+            android:title="Scsp synchronization count per a frame(1 - 255)" />
 
     </PreferenceCategory>
 

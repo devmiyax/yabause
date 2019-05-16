@@ -17,10 +17,18 @@
     along with Yabause; if not, write to the Free Software
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
+#ifndef  _YGL_H_
+#define  _YGL_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#if defined(HAVE_LIBGL) || defined(__ANDROID__) || defined(IOS)
+#if defined(HAVE_LIBGL) || defined(__ANDROID__) || defined(IOS) || defined(NX)
 
-#if defined(__ANDROID__)
+#if defined(__LIBRETRO__) && !defined(_USEGLEW_)
+    #include <glsym/glsym.h>
+    #include <glsm/glsm.h>
+#elif defined(__ANDROID__)
     #include <GLES3/gl3.h>
     #include <GLES3/gl3ext.h>
     #include <EGL/egl.h>
@@ -174,11 +182,16 @@ extern PFNGLMEMORYBARRIERPROC glMemoryBarrier;
     #include <OpenGL/gl3.h>
 
 #else // Linux?
-    #if defined(_OGLES3_)||defined(_OGL3_)
+    #if defined(_OGL3_)
         #define GL_GLEXT_PROTOTYPES 1
         #define GLX_GLXEXT_PROTOTYPES 1
         #include <GL/glew.h>
         #include <GL/gl.h>
+    #elif defined(_OGLES3_)
+        #define GL_GLEXT_PROTOTYPES 1
+        #define GLX_GLXEXT_PROTOTYPES 1
+	#include <EGL/egl.h>
+	#include <GLES3/gl32.h>
     #else
         #include <GL/gl.h>
     #endif
@@ -298,6 +311,7 @@ enum
    PG_VDP2_MOSAIC,
    PG_VDP2_PER_LINE_ALPHA,
    PG_VDP2_NORMAL_CRAM,
+   PG_VDP2_NORMAL_CRAM_SPECIAL_PRIORITY,
    PG_VDP2_ADDCOLOR_CRAM,
    PG_VDP2_BLUR_CRAM,
    PG_VDP2_MOSAIC_CRAM,
@@ -400,6 +414,7 @@ typedef struct {
    char uClipMode;
    short ux1,uy1,ux2,uy2;
    int blendmode;
+   int preblendmode;
    int bwin0,logwin0,bwin1,logwin1,winmode;
    GLuint vertexp;
    GLuint texcoordp;
@@ -453,14 +468,10 @@ typedef enum
 	RES_NATIVE = 0,
 	RES_4x,
 	RES_2x,
-    RES_ORIGINAL
+    RES_ORIGINAL,
+    RES_720P,
+    RES_1080P
 } RESOLUTION_MODE;
-
-typedef enum {
-	VDP_SETTING_FILTERMODE = 0,
-	VDP_SETTING_POLYGON_MODE,
-    VDP_SETTING_RESOLUTION_MODE
-} enSettings;
 
 
 typedef enum {
@@ -551,6 +562,10 @@ typedef struct {
    u32 linecolor_pbo;
    u32 * lincolor_buf;
 
+   u32 back_tex;
+   u32 back_pbo;
+   u32 * backcolor_buf;
+
    AAMODE aamode;
    POLYGONMODE polygonmode;
    RESOLUTION_MODE resolution_mode;
@@ -560,8 +575,11 @@ typedef struct {
    YglPerLineInfo bg[enBGMAX];
    u32 targetfbo;
    int vpd1_running;
-   int cpu_framebuffer_write;
-
+   int cpu_framebuffer_write[2];
+   int min_fb_x;
+   int max_fb_x;
+   int min_fb_y;
+   int max_fb_y;
 
    GLuint cram_tex;
    GLuint cram_tex_pbo;
@@ -573,6 +591,8 @@ typedef struct {
    UniformFrameBuffer fbu_;
    GLuint framebuffer_uniform_id_;
    int msb_shadow_count_[2];
+
+   int rotate_screen;
 
 }  Ygl;
 
@@ -637,8 +657,11 @@ int YglBlitFramebuffer(u32 srcTexture, u32 targetFbo, float w, float h);
 int YglBlitFXAA(u32 sourceTexture, float w, float h);
 
 void YglRenderVDP1(void);
+
 u32 * YglGetLineColorPointer();
 void YglSetLineColor(u32 * pbuf, int size);
+u32* YglGetBackColorPointer();
+void YglSetBackColor(int size);
 
 int Ygl_uniformWindow(void * p );
 int YglProgramInit();
@@ -659,7 +682,7 @@ void YglEraseWriteVDP1();
 void YglFrameChangeVDP1();
 
 
-#if !defined(__APPLE__) && !defined(__ANDROID__) && !defined(_USEGLEW_) && !defined(_OGLES3_)
+#if !defined(__APPLE__) && !defined(__ANDROID__) && !defined(_USEGLEW_) && !defined(_OGLES3_) && !defined(__LIBRETRO__) &&  !defined(NX)
 
 extern GLuint (STDCALL *glCreateProgram)(void);
 extern GLuint (STDCALL *glCreateShader)(GLenum);
@@ -735,9 +758,6 @@ s Shadow Flag
 
 */
 static INLINE u32 VDP1COLOR(u32 C, u32 A, u32 P, u32 shadow, u32 color) {
-  if (shadow != 0) {
-    int a = 0;
-  }
   return 0x80000000 | (C << 30) | (A << 27) | (P << 24) | (shadow << 23) | color;
 }
 
@@ -745,7 +765,18 @@ static INLINE u32 VDP1COLOR16TO24(u16 temp) {
   return (((u32)temp & 0x1F) << 3 | ((u32)temp & 0x3E0) << 6 | ((u32)temp & 0x7C00) << 9);
 }
 
+void Ygl_uniformVDP2DrawFrameBufferShadow(void * p);
+void Ygl_uniformVDP2DrawFramebuffer(void * p, float from, float to, float * offsetcol, int blend);
+int YglDrawBackScreen(float w, float h);
 
 #endif // YGL_H
 
 #endif // defined(HAVE_LIBGL) || defined(__ANDROID__)
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // _YGL_H_
+
+

@@ -164,6 +164,7 @@ public class Yabause extends AppCompatActivity implements  FileDialog.FileSelect
         mTracker = application.getDefaultTracker();
 
         setContentView(R.layout.main);
+        getWindow().setSustainedPerformanceMode(true);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|WindowManager.LayoutParams.FLAG_FULLSCREEN);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         mDrawerLayout.setSystemUiVisibility(
@@ -840,11 +841,14 @@ public class Yabause extends AppCompatActivity implements  FileDialog.FileSelect
         YabauseRunnable.enableExtendedMemory(extmemory ? 1 : 0);
         Log.d(TAG,"enable Extended Memory " + extmemory);
 
+
+        YabauseRunnable.enableRotateScreen(sharedPref.getBoolean("pref_rotate_screen", false) ? 1 : 0);
+
         boolean fps = sharedPref.getBoolean("pref_fps", false);
         YabauseRunnable.enableFPS(fps ? 1 : 0);
         Log.d(TAG,"enable FPS " + fps);
 
-        boolean frameskip = sharedPref.getBoolean("pref_frameskip", false);
+        boolean frameskip = sharedPref.getBoolean("pref_frameskip", true);
         YabauseRunnable.enableFrameskip(frameskip ? 1 : 0);
         Log.d(TAG, "enable enableFrameskip " + frameskip);
 
@@ -977,6 +981,15 @@ public class Yabause extends AppCompatActivity implements  FileDialog.FileSelect
 
         Integer resolution_setting =  new Integer(sharedPref.getString("pref_resolution","0"));
         YabauseRunnable.setResolutionMode(resolution_setting);
+
+        Integer scsp_sync =  new Integer(sharedPref.getString("pref_scsp_sync_per_frame","1"));
+        YabauseRunnable.setScspSyncPerFrame(scsp_sync);
+
+        Integer cpu_sync =  new Integer(sharedPref.getString("pref_cpu_sync_per_line","1"));
+        YabauseRunnable.setCpuSyncPerLine(cpu_sync);
+
+        Integer scsp_time_sync =  new Integer(sharedPref.getString("scsp_time_sync_mode","1"));
+        YabauseRunnable.setScspSyncTimeMode(scsp_time_sync);
 
     }
 

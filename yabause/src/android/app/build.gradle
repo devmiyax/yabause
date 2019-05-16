@@ -5,13 +5,14 @@ android {
     buildToolsVersion '26.0.2'
 
     defaultConfig {
-        applicationId "org.uoyabause.uranus"
+        applicationId "org.uoyabause.android"
         minSdkVersion 19
         targetSdkVersion 25
         multiDexEnabled true
-        versionCode 23
-        versionName '1.2.2'
+        versionCode 66
+        versionName '2.3.1'
         multiDexEnabled true
+        vectorDrawables.useSupportLibrary = true
 
 /*
         externalNativeBuild {
@@ -31,7 +32,7 @@ android {
             abiFilters 'armeabi-v7a'
         }
 */
-    }
+     }
 
     buildTypes {
         release {
@@ -41,13 +42,12 @@ android {
                 renameAPK(variant, defaultConfig, 'R')
             }
         }
-/*
         debug {
-            applicationVariants.all { variant ->
-                renameAPK(variant, defaultConfig, 'T')
+            debuggable true
+           packagingOptions{
+               doNotStrip "**/*/*.so"
             }
         }
-*/
     }
 
     lintOptions {
@@ -61,6 +61,13 @@ android {
         }
     }
 */
+}
+
+crashlytics {
+    enableNdk true
+    androidNdkOut 'src/main/jniLibs'
+    androidNdkLibsOut 'src/main/jniLibs'
+    manifestPath 'src/main/AndroidManifest.xml'
 }
 
 def renameAPK(variant, defaultConfig, buildType) {
@@ -111,7 +118,6 @@ dependencies {
     compile 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
     compile 'com.android.support:support-v4:25.3.1'
-    compile 'com.google.code.gson:gson:2.2.4'
     compile 'com.android.support:multidex:1.0.0'
 }
 

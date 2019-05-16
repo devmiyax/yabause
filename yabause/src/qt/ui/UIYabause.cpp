@@ -172,7 +172,6 @@ UIYabause::UIYabause( QWidget* parent )
 
 	mIsCdIn = true;
 
-
 }
 
 UIYabause::~UIYabause()
@@ -335,12 +334,12 @@ void UIYabause::resizeEvent( QResizeEvent* event )
 
 void UIYabause::adjustHeight(int & height)
 {
-   // Compensate for menubar and toolbar
-   VolatileSettings* vs = QtYabause::volatileSettings();
-   if (vs->value("View/Menubar").toInt() != BD_ALWAYSHIDE)
-      height += menubar->height();
-   if (vs->value("View/Toolbar").toInt() != BD_ALWAYSHIDE)
-      height += toolBar->height();
+  // Compensate for menubar and toolbar
+  VolatileSettings* vs = QtYabause::volatileSettings();
+  if (vs->value("View/Menubar").toInt() != BD_ALWAYSHIDE)
+    height += menubar->height();
+  if (vs->value("View/Toolbar").toInt() != BD_ALWAYSHIDE)
+    height += toolBar->height();
 }
 
 void UIYabause::resizeIntegerScaling()
@@ -464,7 +463,7 @@ void UIYabause::sizeRequested( const QSize& s )
 
 void UIYabause::fixAspectRatio( int width , int height )
 {
-	int aspectRatio = QtYabause::volatileSettings()->value( "Video/AspectRatio").toInt();
+	int aspectRatio = QtYabause::volatileSettings()->value( "Video/AspectRatio",1).toInt();
 
 	switch( aspectRatio )
 	{
@@ -482,13 +481,26 @@ void UIYabause::fixAspectRatio( int width , int height )
           int saturnw = 4;
           int saturnh = 3;
 
-          if (aspectRatio == 1){
-            saturnw = 4;
-            saturnh = 3;
+          VolatileSettings* vs = QtYabause::volatileSettings();
+          if (vs->value("Video/RotateScreen").toBool()) {
+            if (aspectRatio == 1) {
+              saturnw = 3;
+              saturnh = 4;
+            }
+            else {
+              saturnw = 9;
+              saturnh = 16;
+            }
           }
-          else{
-            saturnw = 16;
-            saturnh = 9;
+          else {
+            if (aspectRatio == 1) {
+              saturnw = 4;
+              saturnh = 3;
+            }
+            else {
+              saturnw = 16;
+              saturnh = 9;
+            }
           }
           float saturnraito = (float)saturnw / (float)saturnh;
           float revraito = (float)saturnh / (float)saturnw;
@@ -510,13 +522,24 @@ void UIYabause::fixAspectRatio( int width , int height )
 
       }
       else{
-        int heightOffset = toolBar->height()+menubar->height();
+        int heightOffset = toolBar->height();
+        heightOffset += menubar->height();
         int height;
 
-        if ( aspectRatio == 1 )
-          height = 3 * ((float) width / 4);
-        else
-          height = 9 * ((float) width / 16);
+        VolatileSettings* vs = QtYabause::volatileSettings();
+        if (vs->value("Video/RotateScreen").toBool()) {
+          if (aspectRatio == 1)
+            height = 4 * ((float)width / 3);
+          else
+            height = 16 * ((float)width / 9);
+        }
+        else {
+
+          if (aspectRatio == 1)
+            height = 3 * ((float)width / 4);
+          else
+            height = 9 * ((float)width / 16);
+        }
 
         mouseYRatio = 240.0 / (float)height * 2.0 * (float)mouseSensitivity / 100.0;
 
@@ -612,6 +635,14 @@ void UIYabause::toggleFullscreen( int width, int height, bool f, int videoFormat
 		if (freq < 0)
 			return;
 
+    hwnd_ = (HWND)this->winId(); //FindWindow(0, 0);
+    saved_window_info_.style = GetWindowLong(hwnd_, GWL_STYLE);
+    saved_window_info_.ex_style = GetWindowLong(hwnd_, GWL_EXSTYLE);
+    saved_window_info_.windowsize = this->size();
+    saved_window_info_.windowspos = this->pos();
+
+    //GetWindowRect(hwnd_, &saved_window_info_.window_rect);
+
 		dmScreenSettings.dmSize = sizeof (dmScreenSettings);   
 		dmScreenSettings.dmPelsWidth = width;
 		dmScreenSettings.dmPelsHeight = height;    
@@ -619,10 +650,21 @@ void UIYabause::toggleFullscreen( int width, int height, bool f, int videoFormat
 		dmScreenSettings.dmDisplayFrequency = freq;
 		dmScreenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
 		ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN);
-	}
-	else
-		ChangeDisplaySettings(NULL, 0);
+	} 
+  else {
+    ChangeDisplaySettings(NULL, 0);
+    toolBar->show();
+    menubar->show();
 
+    int title_height = (GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CXPADDEDBORDER));
+    int title_width = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+    SetWindowLong(hwnd_, GWL_STYLE, saved_window_info_.style);
+    SetWindowLong(hwnd_, GWL_EXSTYLE, saved_window_info_.ex_style);
+    saved_window_info_.windowspos.setX(saved_window_info_.windowspos.x() + title_width);
+    saved_window_info_.windowspos.setY(saved_window_info_.windowspos.y() + title_height);
+    this->move(saved_window_info_.windowspos);
+    sizeRequested(saved_window_info_.windowsize);
+  }
 #elif HAVE_LIBXRANDR
 	if (f)
 	{
@@ -666,19 +708,19 @@ void UIYabause::fullscreenRequested( bool f )
 
 		setMaximumSize( QWIDGETSIZE_MAX, QWIDGETSIZE_MAX );
 		setMinimumSize( 0,0 );
-		QPoint ps;
-		ps.setX(0);
-		ps.setY(0);
-		this->move(ps);
+		//QPoint ps;
+		//ps.setX(0);
+		//ps.setY(0);
+		//this->move(ps);
 
-		toggleFullscreen(vs->value("Video/FullscreenWidth").toInt(), vs->value("Video/FullscreenHeight").toInt(), 
+		toggleFullscreen(vs->value("Video/FullscreenWidth","1920").toInt(), vs->value("Video/FullscreenHeight", "1080").toInt(),
 						f, vs->value("Video/VideoFormat").toInt());
 
 		showFullScreen();
 
-		if ( vs->value( "View/Menubar" ).toInt() == BD_HIDEFS )
+		//if ( vs->value( "View/Menubar" ).toInt() == BD_HIDEFS ) // I don't know why this code is needed, so just comment out
 			menubar->hide();
-		if ( vs->value( "View/Toolbar" ).toInt() == BD_HIDEFS )
+		//if ( vs->value( "View/Toolbar" ).toInt() == BD_HIDEFS ) // I don't know why this code is needed, so just comment out
 			toolBar->hide();
 
 		hideMouseTimer->start(3 * 1000);
@@ -917,11 +959,16 @@ void UIYabause::on_aFileOpenISO_triggered()
 		const QString currentCdRomISO = vs->value( "General/CdRomISO" ).toString();
 		
 		QtYabause::settings()->setValue( "Recents/ISOs", fn );
-		
+
+    // Save it permanently
+    QtYabause::settings()->setValue("General/CdRom", ISOCD.id);
+    QtYabause::settings()->setValue("General/CdRomISO", fn);
+    QtYabause::settings()->setValue("General/PlaySSF", false);
+
 		vs->setValue( "autostart", false );
 		vs->setValue( "General/CdRom", ISOCD.id );
 		vs->setValue( "General/CdRomISO", fn );
-      vs->setValue("General/PlaySSF", false);
+    vs->setValue("General/PlaySSF", false);
 		
 		mYabauseThread->pauseEmulation( false, true );
 		
@@ -1276,8 +1323,15 @@ void UIYabause::on_aHelpCompatibilityList_triggered()
 
 void UIYabause::on_aHelpAbout_triggered()
 {
-	YabauseLocker locker( mYabauseThread );
-	UIAbout( window() ).exec();
+  YabauseLocker locker(mYabauseThread);
+  UIAbout(window()).exec();
+}
+
+void UIYabause::on_actionDonate_triggered()
+{
+  QUrl url("https://liberapay.com/~32349/donate");
+  QDesktopServices::openUrl(url);
+
 }
 
 void UIYabause::on_aSound_triggered()

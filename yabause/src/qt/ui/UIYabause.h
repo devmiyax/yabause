@@ -68,6 +68,15 @@ protected:
 	//bool mForceRun;
 };
 
+#if defined Q_OS_WIN
+struct SavedWinInfo {
+  int style;
+  int ex_style;
+  QPoint windowspos;
+  QSize windowsize;
+};
+#endif
+
 class UIYabause : public QMainWindow, public Ui::UIYabause
 {
 	Q_OBJECT
@@ -110,6 +119,11 @@ protected:
 	virtual void resizeEvent( QResizeEvent* event );
 
 	bool mIsCdIn;
+
+#if defined Q_OS_WIN
+  HWND hwnd_;
+  SavedWinInfo saved_window_info_;
+#endif
 
 public slots:
 	void appendLog( const char* msg );
@@ -183,6 +197,7 @@ protected slots:
 	void on_aHelpReport_triggered();
 	void on_aHelpCompatibilityList_triggered();
 	void on_aHelpAbout_triggered();
+  void on_actionDonate_triggered();
 	// toolbar
 	void on_aSound_triggered();
 	void on_aVideoDriver_triggered();
