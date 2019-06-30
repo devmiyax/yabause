@@ -21,6 +21,10 @@ matrix:
             - libsdl2-dev
             - libcurl4-openssl-dev
             - libboost-dev
+            - libboost-system-dev
+            - libboost-filesystem-dev
+            - libboost-date-time-dev
+            - libboost-locale-dev
     
       env:
        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
