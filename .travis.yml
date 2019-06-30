@@ -1,6 +1,6 @@
 language: cpp
 dist: bionic
-sudo: false
+#sudo: false
 #cache:
 #  apt: true
 env:
@@ -57,7 +57,16 @@ matrix:
           
 before_install:
   - eval "${MATRIX_EVAL}"
-
+  - sudo apt-get update -y
+  - sudo apt install -y libegl1-mesa-dev 
+  - sudo apt install -y libgles2-mesa-dev  
+  - sudo apt install -y libsdl2-dev
+  - sudo apt install -y libcurl4-openssl-dev
+  - sudo apt install -y libboost-dev
+  - sudo apt install -y libboost-system-dev
+  - sudo apt install -y libboost-filesystem-dev
+  - sudo apt install -y libboost-date-time-dev
+  - sudo apt install -y libboost-locale-dev
   
 install:
   # Set the ${CXX} variable properly
@@ -71,7 +80,7 @@ install:
 
   # Travis machines have 2 cores
   - JOBS=2
-
+  
   ############################################################################
   # Install a recent CMake (unless already installed on OS X)
   ############################################################################
