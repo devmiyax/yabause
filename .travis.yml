@@ -1,40 +1,20 @@
 language: cpp
 dist: bionic
 sudo: false
-cache:
-  apt: true
+#cache:
+#  apt: true
 env:
   global:
     - GLOBAL=1
-
-addons:
-  apt:
-    packages:
-    - cmake
-    - gcc
-    - g++
-    - libegl1-mesa-dev
-    - libgles2-mesa-dev  
-    - libsdl2-dev
-    - libcurl4-openssl-dev
-    - libboost-dev
-    - libboost-system-dev
-    - libboost-filesystem-dev
-    - libboost-date-time-dev
-    - libboost-locale-dev
-
 
 matrix:
   include:
     - os: linux
       addons:
         apt:
-          #sources:
-          #  - ubuntu-toolchain-r-test
+          sources:
+            - ubuntu-toolchain-r-test
           packages:
-            - cmake
-            - gcc
-            - g++
             - libegl1-mesa-dev
             - libgles2-mesa-dev  
             - libsdl2-dev
