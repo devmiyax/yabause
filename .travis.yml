@@ -100,8 +100,8 @@ script:
   - mkdir build
   - cd build
   - export GIT_HASH=$(git rev-parse --short HEAD)
-  - cmake .. -DYAB_PORTS=retro_arena -DYAB_WANT_DYNAREC_DEVMIYAX=ON -DCMAKE_TOOLCHAIN_FILE=../src/retro_arena/pc.cmake
-  - make VERBOSE=1
+  - cmake .. -DYAB_PORTS=retro_arena -DYAB_WANT_C68K=FALSE -DSH2_DYNAREC=FALSE -DYAB_WANT_DYNAREC_DEVMIYAX=OFF -DCMAKE_TOOLCHAIN_FILE=../src/retro_arena/pc.cmake
+  - make
   - cpack
 
 notifications:
