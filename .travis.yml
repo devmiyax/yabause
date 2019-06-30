@@ -15,8 +15,8 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - gcc-5
-            - g++-5
+            - gcc
+            - g++
             - libegl1-mesa-dev
             - libgles2-mesa-dev  
             - libsdl2-dev
@@ -28,7 +28,7 @@ matrix:
             - libboost-locale-dev
     
       env:
-       - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+       - MATRIX_EVAL="CC=gcc && CXX=g++"
 
 #    - language: android
 #      env:
