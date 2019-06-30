@@ -10,18 +10,18 @@ env:
 addons:
   apt:
     packages:
-      - cmake
-      - gcc
-      - g++
-      - libegl1-mesa-dev
-      - libgles2-mesa-dev  
-      - libsdl2-dev
-      - libcurl4-openssl-dev
-      - libboost-dev
-      - libboost-system-dev
-      - libboost-filesystem-dev
-      - libboost-date-time-dev
-      - libboost-locale-dev
+    - cmake
+    - gcc
+    - g++
+    - libegl1-mesa-dev
+    - libgles2-mesa-dev  
+    - libsdl2-dev
+    - libcurl4-openssl-dev
+    - libboost-dev
+    - libboost-system-dev
+    - libboost-filesystem-dev
+    - libboost-date-time-dev
+    - libboost-locale-dev
 
 
 matrix:
