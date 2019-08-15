@@ -42,7 +42,7 @@ init:
   #- rm "C:\Program Files\Git\usr\bin\sh.exe"
   # cpack won't work because of chocolatey sharing the same name
   - rm "C:\ProgramData\chocolatey\bin\cpack.exe"
-  - set Path=%MINGW%\bin;"C:\Program Files\Git\mingw64\libexec\git-core";%Path%
+  - set Path=%MINGW%\bin;%Path%
 
 before_build:
   - dir "%DXSDK_DIR%/Lib/x86/"
