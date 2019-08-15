@@ -52,6 +52,8 @@ before_build:
   # decompress it, shorten 7z output with FIND
   - 7z x %sdl_filename%  | FIND /V "ing  "
 
+  - git --version
+
 
 build_script:
   - cd C:\projects\yabause\mini18n
