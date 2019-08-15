@@ -18,6 +18,7 @@ environment:
         -DYAB_WANT_DIRECTINPUT=TRUE 
         -DYAB_WANT_DIRECTSOUND=TRUE 
         -DYAB_WANT_SDL=TRUE
+        -DGIT_EXECUTABLE="C:\Program Files\Git\cmd\git.exe"
         -DDirectX_ERR_LIBRARY="%DXSDK_DIR%/Lib/x86/DxErr.lib"
         -DDirectX_GUID_LIBRARY="%DXSDK_DIR%/Lib/x86/dxguid.lib"
         -DDirectX_INPUT8_LIBRARY="%DXSDK_DIR%/Lib/x86/dinput8.lib"
