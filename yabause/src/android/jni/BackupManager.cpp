@@ -97,7 +97,7 @@ int BackupManager::getDevicelist( string & jsonstr ) {
   }
 
   convJsontoString(root,jsonstr);
-  __android_log_print(ANDROID_LOG_INFO,LOGTAG,jsonstr.c_str());
+  __android_log_print(ANDROID_LOG_INFO,LOGTAG,"%s",jsonstr.c_str());
 
   return 0;
 }

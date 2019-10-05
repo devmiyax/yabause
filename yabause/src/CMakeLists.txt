@@ -813,7 +813,7 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "An
 	add_definitions(-DARCH_IS_LINUX=1)
 	set(yabause_SOURCES ${yabause_SOURCES} sock-linux.c thr-linux.c cd-linux.c)
 
-        if (!ANDROID)
+        if (NOT ANDROID)
           check_include_file("linux/joystick.h" LINUX_HAS_JOYSTICK)
           	if (LINUX_HAS_JOYSTICK)
           		set(yabause_SOURCES ${yabause_SOURCES} perlinuxjoy.c)
