@@ -3603,8 +3603,8 @@ void YglRender(void) {
 
      if (_Ygl->clear_r != 0.0 &&  _Ygl->clear_g != 0.0 && _Ygl->clear_b != 0.0) {
        glClearColor(_Ygl->clear_r, _Ygl->clear_g, _Ygl->clear_b, 1.0f);
-       glClear(GL_COLOR_BUFFER_BIT);
      }
+     glClear(GL_COLOR_BUFFER_BIT);
    }
    
    if (_Ygl->texture_manager == NULL) goto render_finish;
