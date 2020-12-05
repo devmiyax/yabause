@@ -90,11 +90,6 @@ static retro_input_state_t input_state_cb;
 static retro_environment_t environ_cb;
 static retro_audio_sample_batch_t audio_batch_cb;
 
-char* toLower(char* s) {
-  for(char *p=s; *p; p++) *p=tolower(*p);
-  return s;
-}
-
 #if defined(_USEGLEW_)
 static struct retro_hw_render_callback hw_render;
 #else
@@ -761,17 +756,17 @@ void check_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
       {
-      if (strcmp(toLower(var.value), "english") == 0)
+      if (strcmp(var.value, "english") == 0)
          system_language = 0;
-      else if (strcmp(toLower(var.value), "deutsch") == 0)
+      else if (strcmp(var.value, "deutsch") == 0)
          system_language = 1;
-      else if (strcmp(toLower(var.value), "french") == 0)
+      else if (strcmp(var.value, "french") == 0)
          system_language = 2;
-      else if (strcmp(toLower(var.value), "spanish") == 0)
+      else if (strcmp(var.value, "spanish") == 0)
          system_language = 3;
-      else if (strcmp(toLower(var.value), "italian") == 0)
+      else if (strcmp(var.value, "italian") == 0)
          system_language = 4;
-      else if (strcmp(toLower(var.value), "japanese") == 0)
+      else if (strcmp(var.value, "japanese") == 0)
          system_language = 5;
    }
  
