@@ -27,17 +27,17 @@
     <string name="bios">BIOS</string>
     <string name="cartridge">Расширение</string>
     <string name="cpu_core">Ядро CPU</string>
-    <string name="video_core">Видеорендер</string>
+    <string name="video_core">Графический движок</string>
     <string name="setting_sound">Звук</string>
     <string name="setting_graphics">Графика</string>
     <string name="setting_general">Общие</string>
     <string name="msg_opengl_not_supported">Устройство не поддерживает OpenGL ES 3.0 или выше.\nOpenGL-рендер недоступен.\n</string>
     <string name="skip">Пропуск</string>
-    <string name="donation">Поддержать проект</string>
+    <string name="donation">Поддержать</string>
     <string name="donate_message">
         Поддержите разработку!\n\n
-	Вы можете поддержать оригинальных разработчиков, сделав пожертвование на официальном сайте http://yabause.org.
-	Вы также можете оказать поддержку Yaba Sanshiro, нажав кнопку Поддержать, чтобы ускорить работу по повышению точности эмуляции, поддержке новых геймпадов и устройств.
+	Вы можете поддержать проект Yaba Sanshiro, сделав пожертвование на официальном сайте http://yabause.org.
+	Вы также можете оказать поддержку Yaba Sanshiro, нажав кнопку Поддержать, что ускорит работы по повышению точности эмуляции, поддержке новых геймпадов и более широкого спектра устройств.
 	Это сообщение и реклама не будут отображаться, если вы поддержите проект.
     </string>
     <string name="thank_you">Спасибо за поддержку!</string>
@@ -69,6 +69,7 @@
     <string name="x_button">X</string>
     <string name="y_button">Y</string>
     <string name="z_button">Z</string>
+    <string name="menu">Меню</string>
 
     <string name="scale">Масштаб</string>
     <string name="transparency">Прозрачность</string>
@@ -76,14 +77,15 @@
     <string name="yes">Да</string>
     <string name="no">Нет</string>
     <string name="exit">Выход</string>
-    <string name="ignore">Пропустить</string>
+    <string name="ignore">Пропуск</string>
 
-    <string name="new_dynrec_cpu_interface">Новый динамический рекомпилятор (быстрей интерпретатора и точней старого рекомпилятора)</string>
+    <string name="new_dynrec_cpu_interface">Новый динамический рекомпилятор (быстрей интерпретатора и точнее старого рекомпилятора)</string>
     <string name="dynrec_cpu_interface">Старый динамический рекомпилятор (быстрый, но менее точный)</string>
     <string name="software_cpu_interface">Интерпретатор (медленный, более точный)</string>
 
     <string name="opengl_video_interface">OpenGL</string>
     <string name="software_video_interface">Программный</string>
+    <string name="vulkan_video_interface">Vulkan (экспериментально)</string>
     <string name="onscreen_pad">Экранный геймпад</string>
     <string name="select_from_other_directory">Загрузить из другой папки</string>
 
@@ -96,7 +98,7 @@
     <string name="video_filter_none">Нет</string>
     <string name="video_filter_fxaa">FXAA</string>
     <string name="video_filter_scanline">Сканлайны (эффект ЭЛТ)</string>
-    <string name="video_filter_bilinear">Билинейный (не работает при рендеринге в нативном разрешении)</string>
+    <string name="video_filter_bilinear">Билинейный (недоступно для рендеринга в нативном разрешении)</string>
     <string name="browse_title"><![CDATA[Videos by Your Company]]></string>
     <string name="related_movies">Похожие видео</string>
     <string name="vertical_grid_title"><![CDATA[Vertical Video Grid]]></string>
@@ -119,7 +121,7 @@
     <string name="error_fragment">Ошибка фрагмента</string>
     <string name="personal_settings">Персональные настройки</string>
     <string name="refresh_db">Обновить список игр</string>
-    <string name="select_bk_image">Фоновое изображение меню</string>
+    <string name="select_bk_image">Выбор фона меню</string>
 
     <!-- Error messages -->
     <string name="video_error_media_load_timeout">Истекло время ожидания загрузки</string>
@@ -147,21 +149,21 @@
     <string name="choose_video_resolution">Выбор разрешения рендеринга</string>
     <string name="choose_video_aspect_ratio">Соотношение сторон рендеринга</string>
     <string name="choose_rbg_resolution">Выбор разрешения RBG (вращаемого фона)</string>
-    <string name="open_cd_tray">Открыть лоток привода</string>
-    <string name="close_cd_tray">Закрыть лоток привода</string>
+    <string name="open_cd_tray">Открыть лоток диска</string>
+    <string name="close_cd_tray">Закрыть лоток диска</string>
     <string name="menu_analog">Включить аналоговый ввод</string>
     <string name="menu_set_as_gametitle">Скриншот для иконки игры</string>
-    <string name="menu_cheat">Чит-коды</string>
     <string name="add_new_code">Добавить новый код</string>
-    <string name="str_use_compute_shader">Вычислительный шейдер для RGB</string>
+    <string name="str_use_compute_shader">Исп. вычислительный шейдер</string>
     <string name="enable">Вкл.</string>
     <string name="disable">Откл.</string>
-    <string name="edit">Правка</string>
+    <string name="edit">Изменить</string>
     <string name="delete">Удалить</string>
     <string name="select_game_directory">Каталог расположения игр</string>
+    <string name="add_dir">Добавить</string>
 
     <string name="sound_curent">Текущий (высокое качество для быстрых устройств)</string>
-    <string name="sound_legacy">Устаревший (для медленных устройств)</string>
+    <string name="sound_legacy">Ранний (для медленных устройств)</string>
 
     <string name="res_native">Нативное (разрешение экрана устройства)</string>
     <string name="res_1080p">1080p</string>
@@ -206,7 +208,7 @@
     <string name="free_space">Свободное место</string>
     <string name="no_enough_free_space">Недостаточно свободного места.</string>
 
-    <string name="extend_internal_memory">Расширение внутренней памяти до 8 Мб</string>
+    <string name="extend_internal_memory">Расширение памяти до 8 Мб</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Привет, пустой фрагмент</string>
@@ -241,10 +243,9 @@
     <string name="sign_out">Выйти</string>
     <string name="sign_in">Войти</string>
     <string name="siginin_message">
-        Вход в аккаунт позволит Вам:\n
-        * Хранить резервные копии сохранений в облаке\n
-        * Делиться чит-кодами с другими пользователями\n\n
-        Данные функции являются экспериментальными и могут быть изменены или удалены без уведомления.
+        Вход в учётную запись позволяет хранить резервные копии сохранений в облаке и использовать их на других устройствах.\n
+        Данная функция является экспериментальной и может быть изменена или удалена без уведомления.
+	Даже без входа в учётную запись такие библиотики как Firebase могут собирать информацию для улучшения приложения. Полная политика конфиденциальности доступна в https://www.uoyabause.org/static_pages/privacy_policy.
     </string>
     <string name="agree">Согласен</string>
     <string name="do_you_want_to_sign_in">Выполнить вход?</string>
@@ -264,9 +265,9 @@
     <string name="drawer_close">drawer_close</string>
     <string name="title_activity_startup">StartupActivity</string>
     <string name="foce_android_tv_mode">Форсировать режим Android TV</string>
-    <string name="game_select_screen">Выбор экрана игры</string>
+    <string name="game_select_screen">Экран выбора игры</string>
     <string name="scsp_sync">Число синхронизаций SCSP за кадр (1 - 255)</string>
-    <string name="need_to_accept">Для работы приложения необходимо подтвердить запрос на предоставление прав. Пожалуйста, перезапустите.</string>
+    <string name="need_to_accept">Для работы приложения необходимо подтвердить запрос на предоставление прав. Пожалуйста, выполните перезапуск.</string>
 
     <string name="cpu_sync_per_line">Приоритет эмуляции</string>
     <string name="sel_cpu_sync_per_line"></string>
@@ -275,8 +276,8 @@
 
     <string name="time_synchronization_mode">Режим синхронизации звука</string>
     <string name="choose_time_synchronization_mode">Выбор режима синхронизации звука</string>
-    <string name="cpu_time">Время CPU (синхронизировать с временем эмулируемого CPU; обеспечивает точную эмуляцию звука, если устройство достаточно быстрое.)</string>
-    <string name="real_time">Реальное время (синхронизировать с рельным временем; звук не искажается даже для небыстрых устройств.)</string>
+    <string name="cpu_time">Время CPU (синхронизация с временем эмулируемого CPU; точная эмуляцию звука для достаточно быстрых устройств.)</string>
+    <string name="real_time">Реальное время (синхронизация с реальным временем; звук не искажается даже на слабых устройствах.)</string>
     <string name="privacy_policy">Политика конфиденциальности</string>
     <string name="information">Информация</string>
     <string name="already_have_been">Если вы уже поддержали, напишите по адресу smiyaxdev@gmail.com</string>
@@ -296,100 +297,39 @@
         4. Выберите запись для запуска.\n
         5. Приятной игры!\n
         \n
-        Для дополнительной информации посетите наш [сайт](https://www.uoyabause.org/static_pages/guide).\n
+        Для получения дополнительной информации ознакомьтесь с [видео на Youtube](https://www.youtube.com/watch?v=Ch6_KhhAg10).\n
         ]]>
     </string>
-    <string name="delete_confirm_title">ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ</string>
-    <string name="not_available">НЕДОСТУПНО!</string>
-    <string name="only_pro_version">Данная функция доступна только в версии Pro</string>
-    <string name="got_it">OK!</string>
-    <string name="enter_pinin">Введите данный PIN на вашем устройстве</string>
-    <string name="sign_in_to_other_devices">Вход на других устройствах</string>
-    <string name="hide_status_bar_and_navigation_bar">Скрыть строку состояния и кнопки навигации</string>
-    <string name="title_activity_yaba_snashiro_settings">YabaSnashiroSettingsActivity</string>
-
-    <!-- Preference Titles -->
-    <string name="messages_header">Сообщения</string>
-    <string name="sync_header">Синхронизация</string>
-
-    <!-- Messages Preferences -->
-    <string name="signature_title">Подпись</string>
-    <string name="reply_title">Ответ по умолчанию</string>
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Периодически синхронизировать почту</string>
-    <string name="attachment_title">Скачать входящие вложения</string>
-    <string name="attachment_summary_on">Автоматически скачивать вложения для входящих писем
-    </string>
-    <string name="attachment_summary_off">Скачивать вложения только вручную</string>
-    <string name="do_you_want_to_install">Установить?</string>
-    <string name="only_chd_is_supported_for_load_game">Вы можетеYou can choose chd,zip,7z file.</string>
-    <string name="install_game_message">После установки вы сможете загружать игру из плейлиста. Это потребует  </string>
-    <string name="install_game_message_after">Мб внутренней памяти.</string>
-
-    <string name="menu_acp">Код Action Replay</string>
-    <string name="updating">Обновление...</string>
-    <string name="add_a_game">Добавить игру</string>
-    <string name="pro_version_available">Доступна версия Pro!\n\n * Нет ограничений на добавление игр\n * Сохранять / загружать состояние игры между устройствами\n * Нет рекламы\n\n</string>
-    <string name="remaining_installation_count">Remaining installation count</string>
-    <string name="remaining_installation_count_is">Remaining installation count is </string>
-    <string name="which_storage">Какое хранилище?</string>
-    <string name="or_place_file_to">Или поместите игру в \"%1$s\" вручную.</string>
-
-    <string name="add_dir">ДОБАВИТЬ</string>
-
+	
     <string name="welcome_11">
         <![CDATA[
-        # Добро пожаловать! \n
+        # Приветствуем! \n
 
-        Чтобы играть в игры SEGA Saturn, у вас есть четыре варианта. \n\n
+        Для запуска игр SEGA Saturn у вас есть четыре варианта.\n\n
 
-        ## 1. Скопируйте игры напрямую на это устройство Android. \n
+        ## 1. Скопируйте игры напрямую на ваше устройство Android. \n
 
-        скопируйте изображения ISO в **\"%1$s\"**. \n
+        скопируйте ISO-образы в **\"%1$s\"**. \n
 
         ## 2. Скопируйте на внешнюю SD-карту. \n
 
-        скопируйте изображения ISO в **\"%2$s\"** на SD-карте. \n
+        скопируйте ISO-образы в **\"%2$s\"** на SD-карте. \n
 
         ## 3. Нажмите кнопку + \n
 
-        Если у вас уже есть файлы изображений в формате CHD или zip. Просто нажмите кнопку + и выберите файл. * Вам нужна мышь на Android TV.\n\n
+        Если у вас уже есть образы в формате CHD или сжатые в ZIP, просто нажмите кнопку + и выберите файл. * Для Android TV потребуется мышка.\n\n
 
-        ## 4. Выберите каталог, содержащий образы ISO \n
+        ## 4. Выберите каталог с ISO-образами \n
 
          [Настройки] -> [Папки загрузки игр] -> [ДОБАВИТЬ] \n\n
 
-        Более подробно описано на нашем веб-сайте [здесь] (https://www.uoyabause.org/static_pages/guide). \n
+
+        Более подробное описание доступно на нашем веб-сайте [здесь] (https://www.uoyabause.org/static_pages/guide).\n
+
         ]]>
     </string>
-
-    <string name="time_synchronization_mode">Режим синхронизации звука</string>
-    <string name="choose_time_synchronization_mode">Выбор режима синхронизации звука</string>
-    <string name="cpu_time">Время CPU (синхронизировать с временем эмулируемого CPU; обеспечивает точную эмуляцию звука, если устройство достаточно быстрое.)</string>
-    <string name="real_time">Реальное время (синхронизировать с рельным временем; звук не искажается даже для небыстрых устройств.)</string>
-    <string name="privacy_policy">Политика конфиденциальности</string>
-    <string name="information">Информация</string>
-    <string name="already_have_been">Если вы уже поддержали, напишите по адресу smiyaxdev@gmail.com</string>
-    <string name="close">Закрыть</string>
-    <string name="show_fps">Показывать FPS</string>
-    <string name="enable_frame_skip">Включить пропуск кадров</string>
-    <string name="game_setting">Настройки игры</string>
-    <string name="welcome">
-        <![CDATA[
-        # Приветствуем!\n\n
-
-        Для запуска игр SEGA Saturn следуйте инструкциям:\n\n
-
-        1. Снимите образы с игровых дисков с помощью DiscImageChef или схожего ПО. [Полезные ссылки](http://wiki.redump.org/index.php?title=Useful_Links.)\n
-        2. Скопируйте файлы образов в каталог **\"%1$s\"** во внутренней памяти устройства.\n
-        3. Вызовите меню и нажмите \"Обновить список игр\". Будет загружен список игр.\n
-        4. Выберите запись для запуска.\n
-        5. Приятной игры!\n
-        \n
-        Для дополнительной информации посетите наш [сайт](https://www.uoyabause.org/static_pages/guide).\n
-        ]]>
-    </string>
+	
+	
     <string name="delete_confirm_title">ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ</string>
     <string name="not_available">НЕДОСТУПНО!</string>
     <string name="only_pro_version">Данная функция доступна только в версии Pro</string>
@@ -405,7 +345,7 @@
 
     <!-- Messages Preferences -->
     <string name="signature_title">Подпись</string>
-    <string name="reply_title">Ответ по умолчанию</string>
+    <string name="reply_title">Действие по умолчанию</string>
 
     <!-- Sync Preferences -->
     <string name="sync_title">Периодически синхронизировать почту</string>
@@ -414,18 +354,36 @@
     </string>
     <string name="attachment_summary_off">Скачивать вложения только вручную</string>
     <string name="do_you_want_to_install">Установить?</string>
-    <string name="only_chd_is_supported_for_load_game">Вы можетеYou can choose chd,zip,7z file.</string>
+    <string name="only_chd_is_supported_for_load_game">Вы можете выбрать файл chd, zip, 7z.</string>
     <string name="install_game_message">После установки вы сможете загружать игру из плейлиста. Это потребует  </string>
     <string name="install_game_message_after">Мб внутренней памяти.</string>
 
     <string name="menu_acp">Код Action Replay</string>
     <string name="updating">Обновление...</string>
     <string name="add_a_game">Добавить игру</string>
-
+    <string name="frameLimit">Ограничение скорости</string>
+    <string name="chooseFrameLimit">Выбор режима ограничения кадров</string>
+    <string name="frameLimitNormal">Нормальный</string>
+    <string name="frameLimitDouble">Двойной</string>
+    <string name="frameLimitUnLimited">Без ограничения</string>
+    <string name="pro_version_available">Доступна версия Pro!\n\n * Нет ограничений на добавление игр\n * Сохранять / загружать состояние игры между устройствами\n * Нет рекламы\n\n</string>
+    <string name="select_install_location">Место установки</string>
+    <string name="remaining_installation_count">Осталось до установки</string>
+    <string name="remaining_installation_count_is">До установки осталось </string>
+    <string name="which_storage">Какое хранилище?</string>
+    <string name="or_place_file_to">Или поместите игру в \"%1$s\" вручную.</string>
     <string name="agreement">
-    Нажимая кнопку СТАРТ, вы соглашаетесь с <a href="https://www.uoyabause.org/static_pages/eula"> Лицензионным соглашением с конечным пользователем </a>.
-    Примечание. <a href="https://www.uoyabause.org/static_pages/privacy_policy"> Политика конфиденциальности </a> описывает, как обрабатываются данные. YabaSanshiro отправляет диагностические данные в devMiyax и сторонние службы, чтобы помочь улучшить приложение.
+    Нажимая СТАРТ вы соглашаетесь с <a href="https://www.uoyabause.org/static_pages/eula">лицензионным соглашением конечного пользователя</a>.
+    Примечание. <a href="https://www.uoyabause.org/static_pages/privacy_policy"> Политика конфиденциальности </a> устанавливает порядок обработки данных. YabaSanshiro отправляет диагностические данные devMiyax и сторонним службам, чтобы помочь улучшить приложение.
     </string>
 
+    <string name="use_cpu_affinity">
+        Исп. сродство CPU
+    </string>
+
+    <string name="use_sh2_cache">
+        Исп. кэш SH2
+    </string>
+	
 </resources>
 	
