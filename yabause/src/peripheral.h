@@ -71,6 +71,7 @@ typedef struct
    int canScan;
    void (*Flush)(void);
    void (*KeyName)(u32 key, char * name, int size);
+   void (*ScanIgnoreAxisFlags)(u32 flags);
 } PerInterface_struct;
 
 /** @brief Pointer to the current peripheral core.

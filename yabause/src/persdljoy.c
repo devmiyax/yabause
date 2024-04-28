@@ -51,6 +51,7 @@ int PERSDLJoyHandleEvents(void);
 u32 PERSDLJoyScan(u32 flags);
 void PERSDLJoyFlush(void);
 void PERSDLKeyName(u32 key, char * name, int size);
+void PERSDLScanIgnoreAxisFlags(u32 flags);
 
 PerInterface_struct PERSDLJoy = {
 PERCORE_SDLJOY,
@@ -61,7 +62,8 @@ PERSDLJoyHandleEvents,
 PERSDLJoyScan,
 1,
 PERSDLJoyFlush,
-PERSDLKeyName
+PERSDLKeyName,
+PERSDLScanIgnoreAxisFlags
 };
 
 typedef struct {
@@ -75,6 +77,7 @@ unsigned int SDL_PERCORE_JOYSTICKS_INITIALIZED = 0;
 PERSDLJoystick* SDL_PERCORE_JOYSTICKS = 0;
 unsigned int SDL_HAT_VALUES[] = { SDL_HAT_UP, SDL_HAT_RIGHT, SDL_HAT_LEFT, SDL_HAT_DOWN };
 const unsigned int SDL_HAT_VALUES_NUM = sizeof(SDL_HAT_VALUES) / sizeof(SDL_HAT_VALUES[0]);
+u32 SDL_PERCORE_SCAN_IGNORE_AXIS_FLAGS = 0;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -295,6 +298,8 @@ u32 PERSDLJoyScan( u32 flags ) {
 		// check axis
 		for ( i = 0; i < SDL_JoystickNumAxes( joy ); i++ )
 		{
+			if (SDL_PERCORE_SCAN_IGNORE_AXIS_FLAGS & (1 << i)) continue;
+
 			cur = SDL_JoystickGetAxis( joy, i );
 
 			if ( cur != SDL_PERCORE_JOYSTICKS[ joyId ].mScanStatus[ i ] )
@@ -354,11 +359,20 @@ u32 PERSDLJoyScan( u32 flags ) {
 }
 
 void PERSDLJoyFlush(void) {
+#ifdef WIN32
+	PERSDLJoyDeInit();
+	PERSDLJoyInit();
+#endif
 }
 
 void PERSDLKeyName(u32 key, char * name, UNUSED int size)
 {
 	sprintf(name, "%x", (int)key);
+}
+
+void PERSDLScanIgnoreAxisFlags(u32 flags)
+{
+	SDL_PERCORE_SCAN_IGNORE_AXIS_FLAGS = flags;
 }
 
 #endif

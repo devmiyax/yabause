@@ -51,6 +51,7 @@ protected:
 	QLabel *mlInfos;
 	u32 scanFlags;
 	QToolButton * curTb;
+	u32 mScanIgnoreAxisFlags;
 
 	void keyPressEvent( QKeyEvent* event );
 	void mouseMoveEvent(QMouseEvent * event);

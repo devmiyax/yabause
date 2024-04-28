@@ -44,6 +44,7 @@ UIControllerSetting::UIControllerSetting( PerInterface_struct* core, uint port, 
 	mPadKey = 0;
 	mlInfos = NULL;
 	scanFlags = PERSF_ALL;
+	mScanIgnoreAxisFlags = 0;
 	QtYabause::retranslateWidget( this );
 }
 
@@ -173,6 +174,13 @@ void UIControllerSetting::loadPadSettings()
 			setPadKey( settings->value( settingsKey ).toUInt() );
 		}
 	}
+
+	const QString keyScanIgnoreAxisFlags = QString("Input/Port/%1/Id/%2/Controller/%3/ScanIgnoreAxisFlags")
+		.arg(mPort)
+		.arg(mPad)
+		.arg(mPerType);
+
+	mScanIgnoreAxisFlags = settings->contains(keyScanIgnoreAxisFlags) ? settings->value(keyScanIgnoreAxisFlags).toUInt() : 0;
 }
 
 bool UIControllerSetting::eventFilter( QObject* object, QEvent* event )
@@ -234,6 +242,10 @@ void UIControllerSetting::tbButton_clicked()
 void UIControllerSetting::timer_timeout()
 {
 	u32 key = 0;
+	if (mCore->ScanIgnoreAxisFlags)
+	{
+		mCore->ScanIgnoreAxisFlags(mScanIgnoreAxisFlags);
+	}
 	key = mCore->Scan(scanFlags);
 	
 	if ( key != 0 )
